@@ -108,4 +108,18 @@ class AirzoneClient:
         )
     
         return (registers[0] >> 4) & 0b11
-
+    
+    def read_zone_speed_name(self, base_address, slave=1):
+        speed = self.read_zone_speed(
+            base_address,
+            slave=slave,
+        )
+    
+        names = {
+            0: "Automatique",
+            1: "Faible",
+            2: "Moyenne",
+            3: "Élevée",
+        }
+    
+        return names.get(speed, f"Inconnue ({speed})")
