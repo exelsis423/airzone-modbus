@@ -77,3 +77,17 @@ class AirzoneClient:
             data.append(value & 0xFF)
     
         return data.split(b"\x00")[0].decode("ascii", errors="replace")
+
+    def read_zone_setpoint(self, base_address, slave=1):
+        """
+        Lit la consigne d'une zone.
+    
+        R03 = consigne en dixièmes de degré Celsius.
+        """
+        registers = self.read_registers(
+            address=base_address,
+            count=4,
+            slave=slave,
+        )
+    
+        return registers[3] / 10.0
