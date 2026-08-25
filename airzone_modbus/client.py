@@ -91,3 +91,21 @@ class AirzoneClient:
         )
     
         return registers[3] / 10.0
+
+    def read_zone_state(self, base_address, slave=1):
+        registers = self.read_registers(
+            address=base_address,
+            count=1,
+            slave=slave,
+        )
+    
+        return bool(registers[0] & (1 << 2))
+    def read_zone_speed(self, base_address, slave=1):
+        registers = self.read_registers(
+            address=base_address,
+            count=1,
+            slave=slave,
+        )
+    
+        return (registers[0] >> 4) & 0b11
+
