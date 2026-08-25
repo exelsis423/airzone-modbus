@@ -32,7 +32,7 @@ class AirzoneClient:
         response = self.client.read_holding_registers(
             address=address,
             count=count,
-            slave=slave,
+            device_id=slave,
         )
 
         if response.isError():
