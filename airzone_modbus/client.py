@@ -56,3 +56,24 @@ class AirzoneClient:
         )
 
         return registers[8] / 10.0
+
+    def read_zone_name(self, base_address, slave=1):
+        """
+        Lit le nom d'une zone.
+    
+        Le nom est stocké dans R14 à R17,
+        avec deux caractères ASCII par registre.
+        """
+        registers = self.read_registers(
+            address=base_address,
+            count=18,
+            slave=slave,
+        )
+    
+        data = bytearray()
+    
+        for value in registers[14:18]:
+            data.append((value >> 8) & 0xFF)
+            data.append(value & 0xFF)
+    
+        return data.split(b"\x00")[0].decode("ascii", errors="replace")
