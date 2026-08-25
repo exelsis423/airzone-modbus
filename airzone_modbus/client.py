@@ -123,3 +123,27 @@ class AirzoneClient:
         }
     
         return names.get(speed, f"Inconnue ({speed})")
+
+    def read_zone_mode(self, base_address, slave=1):
+        registers = self.read_registers(
+            address=base_address,
+            count=1,
+            slave=slave,
+        )
+    
+        return (registers[0] >> 8) & 0x0F
+    def read_zone_mode_name(self, base_address, slave=1):
+        mode = self.read_zone_mode(
+            base_address,
+            slave=slave,
+        )
+    
+        names = {
+            0: "Arrêt",
+            1: "Refroidissement",
+            3: "Ventilation",
+            5: "Chauffage",
+            6: "Sec",
+        }
+    
+        return names.get(mode, f"Inconnu ({mode})")
