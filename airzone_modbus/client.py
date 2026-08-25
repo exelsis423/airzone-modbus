@@ -41,3 +41,18 @@ class AirzoneClient:
             )
 
         return response.registers
+
+    def read_zone_temperature(self, base_address, slave=1):
+        """
+        Lit la température actuelle d'une zone.
+
+        R08 = température en dixièmes de degré Celsius.
+        Exemple : 231 -> 23.1 °C
+        """
+        registers = self.read_registers(
+            address=base_address,
+            count=9,
+            slave=slave,
+        )
+
+        return registers[8] / 10.0
