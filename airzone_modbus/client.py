@@ -53,57 +53,19 @@ class AirzoneClient:
             raise RuntimeError(f"Erreur Modbus : {response}")
     
         return response.registers
+
+    """ REGISTRE R00 """
+    """ BIT 0 : Ventilation locale """
+    def read_zone_local_ventilation(self, base, slave=1):
+        value = self.read_registers(
+            address=base,
+            count=1,
+            slave=slave,
+        )[0]
+    
+        return bool(value & (1 << 0))
         
-    def read_zone_temperature(self, base_address, slave=1):
-        """
-        Lit la température actuelle d'une zone.
-
-        R08 = température en dixièmes de degré Celsius.
-        Exemple : 231 -> 23.1 °C
-        """
-        registers = self.read_registers(
-            address=base_address,
-            count=9,
-            slave=slave,
-        )
-
-        return registers[8] / 10.0
-
-    def read_zone_name(self, base_address, slave=1):
-        """
-        Lit le nom d'une zone.
-    
-        Le nom est stocké dans R14 à R19,
-        avec deux caractères ASCII par registre.
-        """
-        registers = self.read_registers(
-            address=base_address,
-            count=18,
-            slave=slave,
-        )
-    
-        data = bytearray()
-    
-        for value in registers[14:20]:
-            data.append((value >> 8) & 0xFF)
-            data.append(value & 0xFF)
-    
-        return data.split(b"\x00")[0].decode("ascii", errors="replace")
-
-    def read_zone_setpoint(self, base_address, slave=1):
-        """
-        Lit la consigne d'une zone.
-    
-        R03 = consigne en dixièmes de degré Celsius.
-        """
-        registers = self.read_registers(
-            address=base_address,
-            count=4,
-            slave=slave,
-        )
-    
-        return registers[3] / 10.0
-
+    """ BIT 2 : État de la zone """
     def read_zone_state(self, base_address, slave=1):
         registers = self.read_registers(
             address=base_address,
@@ -112,6 +74,8 @@ class AirzoneClient:
         )
     
         return bool(registers[0] & (1 << 2))
+
+    """ BIT 4-5 : Sélection de la vitesse """
     def read_zone_speed(self, base_address, slave=1):
         registers = self.read_registers(
             address=base_address,
@@ -120,7 +84,6 @@ class AirzoneClient:
         )
     
         return (registers[0] >> 4) & 0b11
-    
     def read_zone_speed_name(self, base_address, slave=1):
         speed = self.read_zone_speed(
             base_address,
@@ -136,6 +99,7 @@ class AirzoneClient:
     
         return names.get(speed, f"Inconnue ({speed})")
 
+    """ BIT 8-11 : Mode de la zone """
     def read_zone_mode(self, base_address, slave=1):
         registers = self.read_registers(
             address=base_address,
@@ -160,30 +124,55 @@ class AirzoneClient:
     
         return names.get(mode, f"Inconnu ({mode})")
 
-    def read_zone_fancoil_speed(self, base, slave=1):
-        """Lit la vitesse réelle du fancoil depuis R09 (bits 10-11)."""
+    
+    
+    
+    """ REGISTRE R08 """
+    """ BIT 0 : Ventilation locale """
+    def read_zone_temperature(self, base_address, slave=1):
+        """
+        Lit la température actuelle d'une zone.
+
+        R08 = température en dixièmes de degré Celsius.
+        Exemple : 231 -> 23.1 °C
+        """
         registers = self.read_registers(
-            address=base + 9,
-            count=1,
+            address=base_address,
+            count=9,
+            slave=slave,
+        )
+
+        return registers[8] / 10.0
+
+    """ REGISTRE R14 - R19 """
+    """ Le nom est stocké dans R14 à R19, avec deux caractères ASCII par registre. """
+    def read_zone_name(self, base_address, slave=1):
+        registers = self.read_registers(
+            address=base_address,
+            count=18,
             slave=slave,
         )
     
-        value = registers[0]
-        return (value >> 10) & 0b11
+        data = bytearray()
     
+        for value in registers[14:20]:
+            data.append((value >> 8) & 0xFF)
+            data.append(value & 0xFF)
     
-    def read_zone_fancoil_speed_name(self, base, slave=1):
-        """Retourne le nom de la vitesse réelle du fancoil."""
-        speed = self.read_zone_fancoil_speed(base, slave)
+        return data.split(b"\x00")[0].decode("ascii", errors="replace")
+
+    """ REGISTRE R03 """
+    """ consigne en dixièmes de degré Celsius. """
+    def read_zone_setpoint(self, base_address, slave=1):
+        registers = self.read_registers(
+            address=base_address,
+            count=4,
+            slave=slave,
+        )
     
-        names = {
-            0: "Automatique",
-            1: "Faible",
-            2: "Moyenne",
-            3: "Élevée",
-        }
-    
-        return names.get(speed, "Inconnue")
+        return registers[3] / 10.0
+
+
         
     def read_zone_air_request(self, base, slave=1):
         """Indique si la zone demande de l'air (R09, bit 7)."""
