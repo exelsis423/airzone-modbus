@@ -65,6 +65,16 @@ class AirzoneClient:
     
         return bool(value & (1 << 0))
         
+    """ BIT 1 : Désactivation des programmations horaires de la zone """
+    def read_zone_schedule_disabled(self, base, slave=1):
+        value = self.read_registers(
+            address=base,
+            count=1,
+            slave=slave,
+        )[0]
+    
+        return bool(value & (1 << 1))
+    
     """ BIT 2 : État de la zone """
     def read_zone_state(self, base_address, slave=1):
         registers = self.read_registers(
