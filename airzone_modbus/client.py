@@ -215,7 +215,20 @@ class AirzoneClient:
         )
 
         return registers[8] / 10.0
+    
+    
+    
+    """ REGISTRE R10 """
+    """ T. locale du thermostat """
+    def read_zone_thermostat_temperature(self, base, slave=1):
+        registers = self.read_input_registers(
+            address=base + 10,
+            count=1,
+            slave=slave,
+        )
+        return registers[0] / 10.0
 
+    
     """ REGISTRE R14 - R19 """
     """ Le nom est stocké dans R14 à R19, avec deux caractères ASCII par registre. """
     def read_zone_name(self, base_address, slave=1):
