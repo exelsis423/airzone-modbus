@@ -159,3 +159,28 @@ class AirzoneClient:
         }
     
         return names.get(mode, f"Inconnu ({mode})")
+
+    def read_zone_fancoil_speed(self, base, slave=1):
+        """Lit la vitesse réelle du fancoil depuis R09 (bits 10-11)."""
+        registers = self.read_registers(
+            address=base + 9,
+            count=1,
+            slave=slave,
+        )
+    
+        value = registers[0]
+        return (value >> 10) & 0b11
+    
+    
+    def read_zone_fancoil_speed_name(self, base, slave=1):
+        """Retourne le nom de la vitesse réelle du fancoil."""
+        speed = self.read_zone_fancoil_speed(base, slave)
+    
+        names = {
+            0: "Automatique",
+            1: "Faible",
+            2: "Moyenne",
+            3: "Élevée",
+        }
+    
+        return names.get(speed, "Inconnue")
