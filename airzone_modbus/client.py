@@ -167,8 +167,11 @@ class AirzoneClient:
     
         return bool(value & (1 << 12))    
     
-    """ BIT 15 : Désactivation des programmations horaires de la zone """
-    def read_zone_schedule_disabled(self, base, slave=1):
+    """ BIT 15 : Fonction dépendante du système :
+        - Désactivation des programmations horaires de la zone
+        - Mode d'utilisation basique sur VAF / ZBS
+        """
+    def read_zone_bit15(self, base, slave=1):
         value = self.read_registers(
             address=base,
             count=1,
