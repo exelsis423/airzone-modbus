@@ -234,7 +234,7 @@ class AirzoneClient:
     def read_zone_name(self, base_address, slave=1):
         registers = self.read_registers(
             address=base_address,
-            count=18,
+            count=20,
             slave=slave,
         )
     
