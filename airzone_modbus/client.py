@@ -157,7 +157,16 @@ class AirzoneClient:
     
         return names.get(mode, f"Inconnu ({mode})")
 
+    """ BIT 12 : Mode automatique """
+    def read_zone_automatic_mode(self, base, slave=1):
+        """Lit R00 bit 12 : mode automatique."""
+        value = self.read_registers(
+            address=base,
+            count=1,
+            slave=slave,
+        )[0]
     
+        return bool(value & (1 << 12))    
     
     
     """ REGISTRE R08 """
