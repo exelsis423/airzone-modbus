@@ -418,3 +418,36 @@ class AirzoneClient:
             zone * 256
             for zone in zones
         ]
+
+    # ============================================================
+    # MACHINE - REGISTRE R107
+    # Énergie consommée
+    # ============================================================
+
+    def read_machine_energy(self, slave=1):
+        """
+        Lit le registre R107.
+
+        Bits 0-3   : décimale de l'énergie - heure actuelle
+        Bits 4-7   : énergie - heure actuelle
+        Bits 8-11  : décimale de l'énergie - heure antérieure
+        Bits 12-15 : énergie - heure antérieure
+        """
+        registers = self.read_registers(
+            address=107,
+            count=1,
+            slave=slave,
+        )
+
+        value = registers[0]
+
+        current_integer = (value >> 4) & 0x0F
+        current_decimal = value & 0x0F
+
+        previous_integer = (value >> 12) & 0x0F
+        previous_decimal = (value >> 8) & 0x0F
+
+        return {
+            "current": current_integer + current_decimal / 10,
+            "previous": previous_integer + previous_decimal / 10,
+        }
