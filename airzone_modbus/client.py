@@ -109,6 +109,29 @@ class AirzoneClient:
     
         return names.get(speed, f"Inconnue ({speed})")
 
+    """ BIT 6-7 : Mode Veille """
+    def read_zone_sleep_mode(self, base, slave=1):
+        value = self.read_registers(
+            address=base,
+            count=1,
+            slave=slave,
+        )[0]
+    
+        return (value >> 6) & 0x03
+    def read_zone_sleep_mode_name(self, base, slave=1):
+        """Retourne le nom du mode veille."""
+        modes = {
+            0: "Veille Off",
+            1: "Veille 30",
+            2: "Veille 60",
+            3: "Veille 90",
+        }
+    
+        return modes.get(
+            self.read_zone_sleep_mode(base, slave),
+            "Inconnu",
+        )
+    
     """ BIT 8-11 : Mode de la zone """
     def read_zone_mode(self, base_address, slave=1):
         registers = self.read_registers(
