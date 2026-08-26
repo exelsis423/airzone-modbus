@@ -300,3 +300,82 @@ class AirzoneClient:
         )
     
         return registers[31]
+
+
+
+    # ============================================================
+    # MACHINE - REGISTRE R00
+    # Mode de fonctionnement et vitesse de l'unité
+    # ============================================================
+
+    def read_machine_register_0(self, slave=1):
+        """Lit le registre R00 de la machine."""
+        registers = self.read_registers(
+            address=0,
+            count=1,
+            slave=slave,
+        )
+        return registers[0]
+
+    def read_machine_mode(self, slave=1):
+        """
+        Lit les bits 0-8 de R00.
+
+        Modes documentés :
+          0   = Arrêt
+          1   = Refroidissement
+          2   = Chauffage rayonnant
+          3   = Ventilation
+          4   = Chauffage air
+          5   = Chauffage
+          6   = Sec
+          7   = Chaud auxiliaire
+          8   = Refroidissement rayonnant
+          9   = Refroidissement
+          258 = Chauffage
+        """
+        value = self.read_machine_register_0(slave)
+        return value & 0x01FF
+
+    def read_machine_mode_name(self, slave=1):
+        """Retourne le nom du mode de fonctionnement."""
+        modes = {
+            0: "Arrêt",
+            1: "Refroidissement",
+            2: "Chauffage rayonnant",
+            3: "Ventilation",
+            4: "Chauffage air",
+            5: "Chauffage",
+            6: "Sec",
+            7: "Chaud auxiliaire",
+            8: "Refroidissement rayonnant",
+            9: "Refroidissement",
+            258: "Chauffage",
+        }
+
+        value = self.read_machine_mode(slave)
+        return modes.get(value, f"Inconnu ({value})")
+
+    def read_machine_speed(self, slave=1):
+        """
+        Lit les bits 9-10 de R00.
+
+        0 = Automatique
+        1 = Vitesse faible
+        2 = Vitesse moyenne
+        3 = Vitesse élevée
+        """
+        value = self.read_machine_register_0(slave)
+        return (value >> 9) & 0b11
+
+    def read_machine_speed_name(self, slave=1):
+        """Retourne le nom de la vitesse du ventilo-convecteur."""
+        speeds = {
+            0: "Automatique",
+            1: "Faible",
+            2: "Moyenne",
+            3: "Élevée",
+        }
+
+        value = self.read_machine_speed(slave)
+        return speeds.get(value, f"Inconnu ({value})")
