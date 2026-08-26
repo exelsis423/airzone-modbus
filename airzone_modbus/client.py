@@ -246,4 +246,26 @@ class AirzoneClient:
     
         return data.split(b"\x00")[0].decode("ascii", errors="replace")
 
-
+    """ REGISTRE R25 """
+    """ BIT 1-2 : Offset de consigne du thermostat Lite """
+    def read_thermostat_lite_setpoint_offset(self, base_address, slave=1):
+        """Lit R26 bits 0-2 : offset de consigne du thermostat Lite."""
+        registers = self.read_registers(
+            address=base_address,
+            count=27,
+            slave=slave,
+        )
+    
+        value = registers[26] & 0b111
+    
+        offsets = {
+            0: -3,
+            1: -2,
+            2: -1,
+            3: 0,
+            4: 1,
+            5: 2,
+            6: 3,
+        }
+    
+        return offsets.get(value)
