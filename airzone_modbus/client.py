@@ -278,3 +278,14 @@ class AirzoneClient:
         )
     
         return bool(registers[26] & (1 << 3))
+
+    """ BIT 5 : Présence ou non d’un thermostat Lite dans la zone """
+    def read_thermostat_lite_present(self, base_address, slave=1):
+        """Lit R26 bit 5 : présence d'un thermostat Lite dans la zone."""
+        registers = self.read_registers(
+            address=base_address,
+            count=27,
+            slave=slave,
+        )
+    
+        return bool(registers[26] & (1 << 5))
