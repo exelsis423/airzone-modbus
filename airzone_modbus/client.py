@@ -194,3 +194,13 @@ class AirzoneClient:
         )[0]
     
         return bool((value >> 7) & 1)
+
+    def read_zone_occupied(self, base, slave=1):
+        """Indique si la zone est occupée (R09, bit 8)."""
+        value = self.read_registers(
+            address=base + 9,
+            count=1,
+            slave=slave,
+        )[0]
+    
+        return bool((value >> 8) & 1)
