@@ -214,3 +214,14 @@ class AirzoneClient:
         )[0]
     
         return bool((value >> 9) & 1)
+
+    def read_zone_grid_motor_active(self, base, slave=1):
+        """Indique si le moteur de grille est actif (R09, bit 1)."""
+        value = self.read_registers(
+            address=base + 9,
+            count=1,
+            slave=slave,
+        )[0]
+    
+        return bool((value >> 1) & 1)
+        
