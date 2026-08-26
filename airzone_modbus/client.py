@@ -159,7 +159,6 @@ class AirzoneClient:
 
     """ BIT 12 : Mode automatique """
     def read_zone_automatic_mode(self, base, slave=1):
-        """Lit R00 bit 12 : mode automatique."""
         value = self.read_registers(
             address=base,
             count=1,
@@ -168,7 +167,16 @@ class AirzoneClient:
     
         return bool(value & (1 << 12))    
     
+    """ BIT 15 : Désactivation des programmations horaires de la zone """
+    def read_zone_schedule_disabled(self, base, slave=1):
+        value = self.read_registers(
+            address=base,
+            count=1,
+            slave=slave,
+        )[0]
     
+        return bool(value & (1 << 15))
+        
     """ REGISTRE R08 """
     """ BIT 0 : Ventilation locale """
     def read_zone_temperature(self, base_address, slave=1):
