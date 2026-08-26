@@ -41,7 +41,19 @@ class AirzoneClient:
             )
 
         return response.registers
-
+        
+    def read_input_registers(self, address, count, slave=1):
+        response = self.client.read_input_registers(
+            address=address,
+            count=count,
+            device_id=slave,
+        )
+    
+        if response.isError():
+            raise RuntimeError(f"Erreur Modbus : {response}")
+    
+        return response.registers
+        
     def read_zone_temperature(self, base_address, slave=1):
         """
         Lit la température actuelle d'une zone.
