@@ -246,10 +246,9 @@ class AirzoneClient:
     
         return data.split(b"\x00")[0].decode("ascii", errors="replace")
 
-    """ REGISTRE R25 """
+    """ REGISTRE R26 """
     """ BIT 1-2 : Offset de consigne du thermostat Lite """
     def read_thermostat_lite_setpoint_offset(self, base_address, slave=1):
-        """Lit R26 bits 0-2 : offset de consigne du thermostat Lite."""
         registers = self.read_registers(
             address=base_address,
             count=27,
@@ -269,3 +268,13 @@ class AirzoneClient:
         }
     
         return offsets.get(value)
+
+    """ BIT 3 : (Uniquement Lite filaire) LED d'état allumée """
+    def read_thermostat_lite_status_led(self, base_address, slave=1):
+        registers = self.read_registers(
+            address=base_address,
+            count=27,
+            slave=slave,
+        )
+    
+        return bool(registers[26] & (1 << 3))
