@@ -73,7 +73,7 @@ class AirzoneClient:
         """
         Lit le nom d'une zone.
     
-        Le nom est stocké dans R14 à R17,
+        Le nom est stocké dans R14 à R19,
         avec deux caractères ASCII par registre.
         """
         registers = self.read_registers(
@@ -84,7 +84,7 @@ class AirzoneClient:
     
         data = bytearray()
     
-        for value in registers[14:18]:
+        for value in registers[14:20]:
             data.append((value >> 8) & 0xFF)
             data.append(value & 0xFF)
     
