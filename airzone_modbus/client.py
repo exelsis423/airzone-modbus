@@ -408,3 +408,13 @@ class AirzoneClient:
             for zone in range(1, 17)
             if value & (1 << (zone - 1))
         ]
+    def read_machine_zone_bases(self, slave=1):
+        """
+        Retourne les adresses de base Modbus des zones présentes.
+        """
+        zones = self.read_machine_zones(slave)
+
+        return [
+            zone * 256
+            for zone in zones
+        ]
