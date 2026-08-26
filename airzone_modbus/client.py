@@ -204,3 +204,13 @@ class AirzoneClient:
         )[0]
     
         return bool((value >> 8) & 1)
+
+    def read_zone_window_open(self, base, slave=1):
+        """Indique si une fenêtre est ouverte (R09, bit 9)."""
+        value = self.read_registers(
+            address=base + 9,
+            count=1,
+            slave=slave,
+        )[0]
+    
+        return bool((value >> 9) & 1)
