@@ -379,3 +379,32 @@ class AirzoneClient:
 
         value = self.read_machine_speed(slave)
         return speeds.get(value, f"Inconnu ({value})")
+
+
+    # ============================================================
+    # MACHINE - REGISTRE R09
+    # Zones présentes dans le système
+    # ============================================================
+
+    def read_machine_zones(self, slave=1):
+        """
+        Lit le registre R09 et retourne les numéros des zones présentes.
+
+        Bit 0 = Zone 1
+        Bit 1 = Zone 2
+        ...
+        Bit 15 = Zone 16
+        """
+        registers = self.read_registers(
+            address=9,
+            count=1,
+            slave=slave,
+        )
+
+        value = registers[0]
+
+        return [
+            zone
+            for zone in range(1, 17)
+            if value & (1 << (zone - 1))
+        ]
