@@ -184,3 +184,13 @@ class AirzoneClient:
         }
     
         return names.get(speed, "Inconnue")
+        
+    def read_zone_air_request(self, base, slave=1):
+        """Indique si la zone demande de l'air (R09, bit 7)."""
+        value = self.read_registers(
+            address=base + 9,
+            count=1,
+            slave=slave,
+        )[0]
+    
+        return bool((value >> 7) & 1)
