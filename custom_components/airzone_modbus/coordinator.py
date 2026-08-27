@@ -31,6 +31,8 @@ class AirzoneCoordinator(DataUpdateCoordinator):
         port: int = DEFAULT_PORT,
         slave: int = DEFAULT_SLAVE,
     ) -> None:
+        """Initialise le coordinator."""
+
         self.client = AirzoneClient(host, port)
         self.slave = slave
 
@@ -43,6 +45,7 @@ class AirzoneCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Récupère les données Airzone."""
+
         try:
             return await self.hass.async_add_executor_job(
                 self._update_data
@@ -55,17 +58,44 @@ class AirzoneCoordinator(DataUpdateCoordinator):
 
     def _update_data(self):
         """Lecture synchrone des données."""
+
         if not self.client.connect():
             raise RuntimeError(
                 "Impossible de se connecter à Airzone"
             )
 
         try:
+            # --------------------------------------------------------
+            # MACHINE - R00
+            # --------------------------------------------------------
+
+            register_0 = self.client.read_machine_register_0(
+                slave=self.slave,
+            )
+
+            mode = register_0 & 0x01FF
+            speed = (register_0 >> 9) & 0b11
+
+            # --------------------------------------------------------
+            # MACHINE - R09
+            # --------------------------------------------------------
+
             zones = self.client.read_machine_zones(
                 slave=self.slave,
             )
 
             return {
+                "machine": {
+                    "register_0": register_0,
+                    "mode": mode,
+                    "mode_name": self.client.read_machine_mode_name(
+                        slave=self.slave,
+                    ),
+                    "speed": speed,
+                    "speed_name": self.client.read_machine_speed_name(
+                        slave=self.slave,
+                    ),
+                },
                 "zones": zones,
             }
 
