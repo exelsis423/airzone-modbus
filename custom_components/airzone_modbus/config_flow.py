@@ -9,7 +9,10 @@ from homeassistant.data_entry_flow import FlowResult
 
 from airzone_modbus.client import AirzoneClient
 
-from .const import DEFAULT_PORT, DOMAIN
+from .const import DEFAULT_PORT, DEFAULT_SLAVE, DOMAIN
+
+
+CONF_SLAVE = "slave"
 
 
 class AirzoneModbusConfigFlow(
@@ -29,14 +32,12 @@ class AirzoneModbusConfigFlow(
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            client = None
+            client = AirzoneClient(
+                user_input[CONF_HOST],
+                user_input[CONF_PORT],
+            )
 
             try:
-                client = AirzoneClient(
-                    user_input[CONF_HOST],
-                    user_input[CONF_PORT],
-                )
-
                 connected = await self.hass.async_add_executor_job(
                     client.connect
                 )
@@ -45,7 +46,8 @@ class AirzoneModbusConfigFlow(
                     errors["base"] = "cannot_connect"
                 else:
                     await self.hass.async_add_executor_job(
-                        client.read_machine_zones
+                        client.read_machine_zones,
+                        user_input[CONF_SLAVE],
                     )
 
                     return self.async_create_entry(
@@ -57,20 +59,22 @@ class AirzoneModbusConfigFlow(
                 errors["base"] = "cannot_connect"
 
             finally:
-                if client is not None:
-                    await self.hass.async_add_executor_job(
-                        client.close
-                    )
+                await self.hass.async_add_executor_job(
+                    client.close
+                )
 
         data_schema = vol.Schema(
             {
                 vol.Required(
                     CONF_HOST,
-                    default="192.168.1.7",
                 ): str,
                 vol.Required(
                     CONF_PORT,
                     default=DEFAULT_PORT,
+                ): int,
+                vol.Required(
+                    CONF_SLAVE,
+                    default=DEFAULT_SLAVE,
                 ): int,
             }
         )
