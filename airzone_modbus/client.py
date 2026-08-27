@@ -420,7 +420,7 @@ class AirzoneClient:
         ]
 
 
-
+"""
         previous_integer = (value >> 12) & 0x0F
         previous_decimal = (value >> 8) & 0x0F
 
@@ -428,3 +428,4 @@ class AirzoneClient:
             "current": current_integer + current_decimal / 10,
             "previous": previous_integer + previous_decimal / 10,
         }
+"""
