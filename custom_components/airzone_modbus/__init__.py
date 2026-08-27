@@ -4,6 +4,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
+from .coordinator import AirzoneCoordinator
 
 
 async def async_setup(
@@ -23,8 +24,15 @@ async def async_setup_entry(
 ) -> bool:
     """Configure une entrée Airzone Modbus."""
 
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = entry.data
+    coordinator = AirzoneCoordinator(
+        hass,
+        host=entry.data["host"],
+        port=entry.data["port"],
+    )
+
+    await coordinator.async_config_entry_first_refresh()
+
+    hass.data[DOMAIN][entry.entry_id] = coordinator
 
     return True
 
