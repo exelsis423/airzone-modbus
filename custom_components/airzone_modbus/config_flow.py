@@ -7,11 +7,9 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import DOMAIN
-from . import AirzoneClient
+from airzone_modbus.client import AirzoneClient
 
-
-CONF_SLAVE = "slave"
+from .const import DEFAULT_PORT, DOMAIN
 
 
 class AirzoneModbusConfigFlow(
@@ -31,6 +29,8 @@ class AirzoneModbusConfigFlow(
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            client = None
+
             try:
                 client = AirzoneClient(
                     user_input[CONF_HOST],
@@ -45,12 +45,7 @@ class AirzoneModbusConfigFlow(
                     errors["base"] = "cannot_connect"
                 else:
                     await self.hass.async_add_executor_job(
-                        client.read_machine_zones,
-                        user_input[CONF_SLAVE],
-                    )
-
-                    await self.hass.async_add_executor_job(
-                        client.close
+                        client.read_machine_zones
                     )
 
                     return self.async_create_entry(
@@ -62,12 +57,10 @@ class AirzoneModbusConfigFlow(
                 errors["base"] = "cannot_connect"
 
             finally:
-                try:
+                if client is not None:
                     await self.hass.async_add_executor_job(
                         client.close
                     )
-                except Exception:
-                    pass
 
         data_schema = vol.Schema(
             {
@@ -77,11 +70,7 @@ class AirzoneModbusConfigFlow(
                 ): str,
                 vol.Required(
                     CONF_PORT,
-                    default=8899,
-                ): int,
-                vol.Required(
-                    CONF_SLAVE,
-                    default=1,
+                    default=DEFAULT_PORT,
                 ): int,
             }
         )
