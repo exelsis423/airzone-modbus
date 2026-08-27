@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Airzone",
+        "description": "Enter the connection details of your Airzone Modbus gateway.",
+        "data": {
+          "host": "IP address",
+          "port": "Port",
+          "slave": "Modbus slave"
+        },
+        "data_description": {
+          "host": "IP address of the Modbus TCP gateway.",
+          "port": "TCP port used by the Airzone gateway.",
+          "slave": "Modbus device ID."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to the Airzone system."
+    }
+  }
+}
