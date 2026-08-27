@@ -6,7 +6,7 @@
   "requirements": [
     "pymodbus>=3.9.0"
   ],
-  "codeowners": [],
-  "config_flow": false,
+  "codeowners": ["@exelsis423"],
+  "config_flow": true,
   "iot_class": "local_polling"
 }
