@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "airzone-modbus"
+version = "0.1.0"
+description = "Modbus client for Airzone systems"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pymodbus>=3.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["airzone_modbus*"]
