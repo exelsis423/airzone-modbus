@@ -2,12 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
-
-from homeassistant.components.sensor import (
-    SensorDeviceClass,
-    SensorEntity,
-)
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -32,6 +27,7 @@ async def async_setup_entry(
         [
             AirzoneMachineModeSensor(coordinator, entry),
             AirzoneMachineSpeedSensor(coordinator, entry),
+            AirzoneMachineZonesSensor(coordinator, entry),
         ]
     )
 
@@ -42,7 +38,7 @@ class AirzoneMachineModeSensor(
 ):
     """Sensor for the Airzone machine operating mode."""
 
-    _attr_name = "Mode"
+    _attr_name = "Airzone — Mode"
     _attr_icon = "mdi:air-conditioner"
 
     def __init__(
@@ -71,7 +67,7 @@ class AirzoneMachineSpeedSensor(
 ):
     """Sensor for the Airzone machine fan speed."""
 
-    _attr_name = "Vitesse"
+    _attr_name = "Airzone — Vitesse ventilation"
     _attr_icon = "mdi:fan"
 
     def __init__(
@@ -84,7 +80,7 @@ class AirzoneMachineSpeedSensor(
         super().__init__(coordinator)
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_machine_speed"
+            f"{entry.entry_id}_machine_fan_speed"
         )
 
     @property
@@ -92,3 +88,40 @@ class AirzoneMachineSpeedSensor(
         """Return the current fan speed."""
 
         return self.coordinator.data["machine"]["speed_name"]
+
+
+class AirzoneMachineZonesSensor(
+    CoordinatorEntity[AirzoneCoordinator],
+    SensorEntity,
+):
+    """Sensor for the number of Airzone zones."""
+
+    _attr_name = "Airzone — Zones présentes"
+    _attr_icon = "mdi:home-group"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the sensor."""
+
+        super().__init__(coordinator)
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_machine_zones"
+        )
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of zones."""
+
+        return len(self.coordinator.data["zones"])
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return the list of present zones."""
+
+        return {
+            "zones": self.coordinator.data["zones"],
+        }
