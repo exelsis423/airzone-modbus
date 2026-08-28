@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
     BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -30,27 +31,12 @@ async def async_setup_entry(
     for zone in coordinator.data["zones"]:
         entities.extend(
             [
-                AirzoneZoneLocalVentilation(
+                AirzoneZoneThermostatLed(
                     coordinator,
                     entry,
                     zone,
                 ),
-                AirzoneZoneScheduleDisabled(
-                    coordinator,
-                    entry,
-                    zone,
-                ),
-                AirzoneZoneState(
-                    coordinator,
-                    entry,
-                    zone,
-                ),
-                AirzoneZoneAutomaticMode(
-                    coordinator,
-                    entry,
-                    zone,
-                ),
-                AirzoneZoneBit15(
+                AirzoneZoneThermostatLitePresent(
                     coordinator,
                     entry,
                     zone,
@@ -61,13 +47,13 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class AirzoneZoneLocalVentilation(
+class AirzoneZoneThermostatLed(
     CoordinatorEntity[AirzoneCoordinator],
     BinarySensorEntity,
 ):
-    """Local ventilation state of an Airzone zone."""
+    """Thermostat Lite status LED."""
 
-    _attr_icon = "mdi:fan"
+    _attr_device_class = BinarySensorDeviceClass.RUNNING
 
     def __init__(
         self,
@@ -75,36 +61,33 @@ class AirzoneZoneLocalVentilation(
         entry: ConfigEntry,
         zone: int,
     ) -> None:
-        """Initialize the binary sensor."""
-
         super().__init__(coordinator)
 
         self.zone = zone
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_zone_{zone}_local_ventilation"
+            f"{entry.entry_id}_zone_{zone}_thermostat_led"
         )
-
         self._attr_name = (
-            f"Airzone — Zone {zone} — Ventilation locale"
+            f"Airzone — Zone {zone} — LED thermostat"
         )
 
     @property
     def is_on(self) -> bool:
-        """Return the local ventilation state."""
+        """Return whether the thermostat LED is on."""
 
         return self.coordinator.data["zone_data"][
             self.zone
-        ]["local_ventilation"]
+        ]["thermostat_led"]
 
 
-class AirzoneZoneScheduleDisabled(
+class AirzoneZoneThermostatLitePresent(
     CoordinatorEntity[AirzoneCoordinator],
     BinarySensorEntity,
 ):
-    """Schedule disabled state of an Airzone zone."""
+    """Thermostat Lite presence."""
 
-    _attr_icon = "mdi:calendar-remove"
+    _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
 
     def __init__(
         self,
@@ -112,135 +95,21 @@ class AirzoneZoneScheduleDisabled(
         entry: ConfigEntry,
         zone: int,
     ) -> None:
-        """Initialize the binary sensor."""
-
         super().__init__(coordinator)
 
         self.zone = zone
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_zone_{zone}_schedule_disabled"
+            f"{entry.entry_id}_zone_{zone}_thermostat_lite"
         )
-
         self._attr_name = (
-            f"Airzone — Zone {zone} — Programmation désactivée"
+            f"Airzone — Zone {zone} — Thermostat Lite"
         )
 
     @property
     def is_on(self) -> bool:
-        """Return whether the schedule is disabled."""
+        """Return whether a thermostat Lite is present."""
 
         return self.coordinator.data["zone_data"][
             self.zone
-        ]["schedule_disabled"]
-
-
-class AirzoneZoneState(
-    CoordinatorEntity[AirzoneCoordinator],
-    BinarySensorEntity,
-):
-    """State of an Airzone zone."""
-
-    _attr_icon = "mdi:power"
-
-    def __init__(
-        self,
-        coordinator: AirzoneCoordinator,
-        entry: ConfigEntry,
-        zone: int,
-    ) -> None:
-        """Initialize the binary sensor."""
-
-        super().__init__(coordinator)
-
-        self.zone = zone
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_zone_{zone}_state"
-        )
-
-        self._attr_name = (
-            f"Airzone — Zone {zone} — État"
-        )
-
-    @property
-    def is_on(self) -> bool:
-        """Return the zone state."""
-
-        return self.coordinator.data["zone_data"][
-            self.zone
-        ]["state"]
-
-
-class AirzoneZoneAutomaticMode(
-    CoordinatorEntity[AirzoneCoordinator],
-    BinarySensorEntity,
-):
-    """Automatic mode of an Airzone zone."""
-
-    _attr_icon = "mdi:autorenew"
-
-    def __init__(
-        self,
-        coordinator: AirzoneCoordinator,
-        entry: ConfigEntry,
-        zone: int,
-    ) -> None:
-        """Initialize the binary sensor."""
-
-        super().__init__(coordinator)
-
-        self.zone = zone
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_zone_{zone}_automatic_mode"
-        )
-
-        self._attr_name = (
-            f"Airzone — Zone {zone} — Mode automatique"
-        )
-
-    @property
-    def is_on(self) -> bool:
-        """Return the automatic mode state."""
-
-        return self.coordinator.data["zone_data"][
-            self.zone
-        ]["automatic_mode"]
-
-
-class AirzoneZoneBit15(
-    CoordinatorEntity[AirzoneCoordinator],
-    BinarySensorEntity,
-):
-    """System-dependent function of an Airzone zone."""
-
-    _attr_icon = "mdi:information-outline"
-
-    def __init__(
-        self,
-        coordinator: AirzoneCoordinator,
-        entry: ConfigEntry,
-        zone: int,
-    ) -> None:
-        """Initialize the binary sensor."""
-
-        super().__init__(coordinator)
-
-        self.zone = zone
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_zone_{zone}_bit15"
-        )
-
-        self._attr_name = (
-            f"Airzone — Zone {zone} — Fonction système"
-        )
-
-    @property
-    def is_on(self) -> bool:
-        """Return the system-dependent function state."""
-
-        return self.coordinator.data["zone_data"][
-            self.zone
-        ]["bit15"]
+        ]["thermostat_lite_present"]
