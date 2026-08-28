@@ -66,6 +66,11 @@ async def async_setup_entry(
                     entry,
                     zone,
                 ),
+                AirzoneZoneName(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
             ]
         )
 
@@ -339,3 +344,37 @@ class AirzoneZoneThermostatTemperature(
         return self.coordinator.data["zone_data"][
             self.zone
         ]["thermostat_temperature"]
+
+
+class AirzoneZoneName(
+    CoordinatorEntity[AirzoneCoordinator],
+    SensorEntity,
+):
+    """Name of an Airzone zone."""
+
+    _attr_icon = "mdi:rename-box"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_name"
+        )
+        self._attr_name = (
+            f"Airzone — Zone {zone} — Nom"
+        )
+
+    @property
+    def native_value(self) -> str:
+        """Return the Airzone zone name."""
+
+        return self.coordinator.data["zone_data"][
+            self.zone
+        ]["name"]
