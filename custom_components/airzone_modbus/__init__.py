@@ -44,6 +44,7 @@ async def async_setup_entry(
             "binary_sensor",
             "select",
             "switch",
+            "number",
         ],
     )
 
@@ -63,6 +64,7 @@ async def async_unload_entry(
             "binary_sensor",
             "select",
             "switch",
+            "number",
         ],
     )
 
