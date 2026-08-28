@@ -419,13 +419,48 @@ class AirzoneClient:
             for zone in zones
         ]
 
+    # ============================================================
+    # MACHINE - ÉCRITURE R00
+    # ============================================================
 
-"""
-        previous_integer = (value >> 12) & 0x0F
-        previous_decimal = (value >> 8) & 0x0F
+    def write_machine_mode(self, mode, slave=1):
+        """Modifie le mode de fonctionnement de la machine."""
 
-        return {
-            "current": current_integer + current_decimal / 10,
-            "previous": previous_integer + previous_decimal / 10,
-        }
-"""
+        current = self.read_machine_register_0(slave)
+
+        # Bits 0-8
+        new_value = (current & ~0x01FF) | (mode & 0x01FF)
+
+        response = self.client.write_register(
+            address=0,
+            value=new_value,
+            device_id=slave,
+        )
+
+        if response.isError():
+            raise RuntimeError(
+                f"Erreur Modbus écriture machine mode : {response}"
+            )
+
+    def write_machine_speed(self, speed, slave=1):
+        """Modifie la vitesse de ventilation de la machine."""
+
+        current = self.read_machine_register_0(slave)
+
+        # Bits 9-10
+        new_value = (
+            (current & ~(0b11 << 9))
+            | ((speed & 0b11) << 9)
+        )
+
+        response = self.client.write_register(
+            address=0,
+            value=new_value,
+            device_id=slave,
+        )
+
+        if response.isError():
+            raise RuntimeError(
+                f"Erreur Modbus écriture machine vitesse : {response}"
+            )
+
