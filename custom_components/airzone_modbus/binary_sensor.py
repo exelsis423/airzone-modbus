@@ -23,7 +23,7 @@ async_add_entities: AddEntitiesCallback,
 ) -> None:
 """Set up Airzone Modbus binary sensors."""
 
-```
+
 coordinator: AirzoneCoordinator = hass.data[
     DOMAIN
 ][entry.entry_id]
@@ -57,7 +57,7 @@ for zone in coordinator.data["zones"]:
     )
 
 async_add_entities(entities)
-```
+
 
 # ============================================================
 
@@ -73,7 +73,7 @@ BinarySensorEntity,
 ):
 """R00 bit 0 - Ventilation locale."""
 
-```
+
 _attr_device_class = BinarySensorDeviceClass.RUNNING
 
 def __init__(
@@ -100,7 +100,7 @@ def is_on(self) -> bool:
     return self.coordinator.data["zone_data"][
         self.zone
     ]["local_ventilation"]
-```
+
 
 # ============================================================
 
@@ -116,7 +116,7 @@ BinarySensorEntity,
 ):
 """R00 bit 15 - Fonction dépendante du système."""
 
-```
+
 def __init__(
     self,
     coordinator,
@@ -157,7 +157,7 @@ BinarySensorEntity,
 ):
 """R26 bit 3 - LED thermostat Lite."""
 
-```
+
 _attr_device_class = BinarySensorDeviceClass.RUNNING
 
 def __init__(
@@ -200,7 +200,7 @@ BinarySensorEntity,
 ):
 """R26 bit 5 - Thermostat Lite présent."""
 
-```
+
 _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
 
 def __init__(
@@ -227,4 +227,3 @@ def is_on(self) -> bool:
     return self.coordinator.data["zone_data"][
         self.zone
     ]["thermostat_lite_present"]
-```
