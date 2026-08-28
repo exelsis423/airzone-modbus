@@ -45,6 +45,16 @@ async def async_setup_entry(
                     entry,
                     zone,
                 ),
+                AirzoneZoneAutomaticMode(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
+                AirzoneZoneBit15(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
             ]
         )
 
@@ -160,3 +170,77 @@ class AirzoneZoneState(
         return self.coordinator.data["zone_data"][
             self.zone
         ]["state"]
+
+
+class AirzoneZoneAutomaticMode(
+    CoordinatorEntity[AirzoneCoordinator],
+    BinarySensorEntity,
+):
+    """Automatic mode of an Airzone zone."""
+
+    _attr_icon = "mdi:autorenew"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        """Initialize the binary sensor."""
+
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_automatic_mode"
+        )
+
+        self._attr_name = (
+            f"Airzone — Zone {zone} — Mode automatique"
+        )
+
+    @property
+    def is_on(self) -> bool:
+        """Return the automatic mode state."""
+
+        return self.coordinator.data["zone_data"][
+            self.zone
+        ]["automatic_mode"]
+
+
+class AirzoneZoneBit15(
+    CoordinatorEntity[AirzoneCoordinator],
+    BinarySensorEntity,
+):
+    """System-dependent function of an Airzone zone."""
+
+    _attr_icon = "mdi:information-outline"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        """Initialize the binary sensor."""
+
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_bit15"
+        )
+
+        self._attr_name = (
+            f"Airzone — Zone {zone} — Fonction système"
+        )
+
+    @property
+    def is_on(self) -> bool:
+        """Return the system-dependent function state."""
+
+        return self.coordinator.data["zone_data"][
+            self.zone
+        ]["bit15"]
