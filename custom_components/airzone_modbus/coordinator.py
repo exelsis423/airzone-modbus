@@ -290,3 +290,108 @@ class AirzoneCoordinator(DataUpdateCoordinator):
         finally:
             self.client.close()
 
+    # ================================================================
+    # ÉCRITURES MACHINE
+    # ================================================================
+
+    async def async_write_machine_mode(
+        self,
+        mode: int,
+    ) -> None:
+        """Écrit le mode machine."""
+
+        await self.hass.async_add_executor_job(
+            self._write_machine_mode,
+            mode,
+        )
+
+        if self.data is not None:
+            self.data["machine"]["mode"] = mode
+
+            mode_names = {
+                0: "Arrêt",
+                1: "Refroidissement",
+                2: "Chauffage rayonnant",
+                3: "Ventilation",
+                4: "Chauffage air",
+                5: "Chauffage",
+                6: "Sec",
+                7: "Chaud auxiliaire",
+                8: "Refroidissement rayonnant",
+                9: "Refroidissement",
+                258: "Chauffage",
+            }
+
+            self.data["machine"]["mode_name"] = mode_names.get(
+                mode,
+                f"Inconnu ({mode})",
+            )
+
+            self.async_set_updated_data(self.data)
+
+    def _write_machine_mode(
+        self,
+        mode: int,
+    ) -> None:
+        """Écriture synchrone du mode machine."""
+
+        if not self.client.connect():
+            raise RuntimeError(
+                "Impossible de se connecter à Airzone"
+            )
+
+        try:
+            self.client.write_machine_mode(
+                mode,
+                slave=self.slave,
+            )
+        finally:
+            self.client.close()
+
+    async def async_write_machine_speed(
+        self,
+        speed: int,
+    ) -> None:
+        """Écrit la vitesse machine."""
+
+        await self.hass.async_add_executor_job(
+            self._write_machine_speed,
+            speed,
+        )
+
+        if self.data is not None:
+            self.data["machine"]["speed"] = speed
+
+            speed_names = {
+                0: "Automatique",
+                1: "Faible",
+                2: "Moyenne",
+                3: "Élevée",
+            }
+
+            self.data["machine"]["speed_name"] = speed_names.get(
+                speed,
+                f"Inconnu ({speed})",
+            )
+
+            self.async_set_updated_data(self.data)
+
+    def _write_machine_speed(
+        self,
+        speed: int,
+    ) -> None:
+        """Écriture synchrone de la vitesse machine."""
+
+        if not self.client.connect():
+            raise RuntimeError(
+                "Impossible de se connecter à Airzone"
+            )
+
+        try:
+            self.client.write_machine_speed(
+                speed,
+                slave=self.slave,
+            )
+        finally:
+            self.client.close()
+
