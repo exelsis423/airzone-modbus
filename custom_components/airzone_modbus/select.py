@@ -79,6 +79,7 @@ class AirzoneMachineModeSelect(
     @property
     def current_option(self) -> str | None:
         """Retourne le mode actuel."""
+
         if not self.coordinator.data:
             return None
 
@@ -95,25 +96,7 @@ class AirzoneMachineModeSelect(
             if name == option
         )
 
-        await self.hass.async_add_executor_job(
-            self._write_mode,
-            mode,
-        )
-
-        await self.coordinator.async_request_refresh()
-
-    def _write_mode(self, mode: int) -> None:
-        """Écrit le mode dans le registre Modbus."""
-
-        self.coordinator.client.connect()
-
-        try:
-            self.coordinator.client.write_machine_mode(
-                mode,
-                slave=self.coordinator.slave,
-            )
-        finally:
-            self.coordinator.client.close()
+        await self.coordinator.async_write_machine_mode(mode)
 
 
 class AirzoneMachineSpeedSelect(
@@ -144,10 +127,11 @@ class AirzoneMachineSpeedSelect(
     @property
     def current_option(self) -> str | None:
         """Retourne la vitesse actuelle."""
+
         if not self.coordinator.data:
             return None
 
-        speed = self.coordinator.data.get("machine_speed")
+        speed = self.coordinator.data["machine"]["speed"]
 
         return MACHINE_SPEEDS.get(speed)
 
@@ -160,22 +144,5 @@ class AirzoneMachineSpeedSelect(
             if name == option
         )
 
-        await self.hass.async_add_executor_job(
-            self._write_speed,
-            speed,
-        )
+        await self.coordinator.async_write_machine_speed(speed)
 
-        await self.coordinator.async_request_refresh()
-
-    def _write_speed(self, speed: int) -> None:
-        """Écrit la vitesse dans le registre Modbus."""
-
-        self.coordinator.client.connect()
-
-        try:
-            self.coordinator.client.write_machine_speed(
-                speed,
-                slave=self.coordinator.slave,
-            )
-        finally:
-            self.coordinator.client.close()
