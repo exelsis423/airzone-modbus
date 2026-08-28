@@ -687,6 +687,51 @@ class AirzoneCoordinator(DataUpdateCoordinator):
             self.client.close()
 
     # ================================================================
+    # ÉCRITURES ZONES - R03
+    # ================================================================
+
+    async def async_write_zone_setpoint(
+        self,
+        zone: int,
+        setpoint: float,
+    ) -> None:
+        """Écrit la consigne de température."""
+
+        await self.hass.async_add_executor_job(
+            self._write_zone_setpoint,
+            zone,
+            setpoint,
+        )
+
+        if self.data is not None:
+            self.data["zone_data"][zone]["setpoint"] = setpoint
+
+            self.async_set_updated_data(self.data)
+
+    def _write_zone_setpoint(
+        self,
+        zone: int,
+        setpoint: float,
+    ) -> None:
+        """Écriture synchrone de la consigne."""
+
+        if not self.client.connect():
+            raise RuntimeError(
+                "Impossible de se connecter à Airzone"
+            )
+
+        try:
+            base_address = zone * 256
+
+            self.client.write_zone_setpoint(
+                base_address,
+                setpoint,
+                slave=self.slave,
+            )
+        finally:
+            self.client.close()
+            
+    # ================================================================
     # ÉCRITURES ZONES - R26
     # ================================================================
 
