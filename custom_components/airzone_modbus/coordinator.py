@@ -110,6 +110,30 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                             slave=self.slave,
                         )
                     ),
+
+                    # R00 - BITS 4-5
+                    "speed": (
+                        self.client.read_zone_speed_name(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
+
+                    # R00 - BITS 6-7
+                    "sleep_mode": (
+                        self.client.read_zone_sleep_mode_name(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
+
+                    # R00 - BITS 8-11
+                    "mode": (
+                        self.client.read_zone_mode_name(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
                 }
 
             return {
