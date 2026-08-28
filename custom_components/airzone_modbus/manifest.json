@@ -1,7 +1,7 @@
 {
   "domain": "airzone_modbus",
   "name": "Airzone Modbus",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "documentation": "https://github.com/exelsis423/airzone-modbus",
   "requirements": [
     "airzone-modbus@git+https://github.com/exelsis423/airzone-modbus.git@main"
