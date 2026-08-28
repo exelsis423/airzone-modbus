@@ -14,8 +14,8 @@ from airzone_modbus.client import AirzoneClient
 from .const import (
     DEFAULT_PORT,
     DEFAULT_SLAVE,
+    DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
-    UPDATE_INTERVAL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,6 +30,7 @@ class AirzoneCoordinator(DataUpdateCoordinator):
         host: str,
         port: int = DEFAULT_PORT,
         slave: int = DEFAULT_SLAVE,
+        update_interval: int = DEFAULT_UPDATE_INTERVAL,
     ) -> None:
         self.client = AirzoneClient(host, port)
         self.slave = slave
@@ -38,7 +39,9 @@ class AirzoneCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(seconds=UPDATE_INTERVAL),
+            update_interval=timedelta(
+                seconds=update_interval
+            ),
         )
 
     async def _async_update_data(self):
