@@ -43,6 +43,11 @@ async def async_setup_entry(
                     entry,
                     zone,
                 ),
+                AirzoneZoneThermostatLedSwitch(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
             ]
         )
 
@@ -221,4 +226,61 @@ class AirzoneZoneScheduleSwitch(
         await self.coordinator.async_write_zone_schedule_disabled(
             self.zone,
             True,
+        )
+
+# ============================================================
+# ZONE - R26 BIT 3
+# LED thermostat Lite
+# ============================================================
+
+
+class AirzoneZoneThermostatLedSwitch(
+    CoordinatorEntity[AirzoneCoordinator],
+    SwitchEntity,
+):
+    """Interrupteur de la LED du thermostat Lite."""
+
+    _attr_icon = "mdi:led-on"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_thermostat_led_switch"
+        )
+
+        self._attr_name = (
+            f"Airzone — Zone {zone} — "
+            "LED thermostat"
+        )
+
+    @property
+    def is_on(self) -> bool:
+        """Retourne l'état de la LED."""
+
+        return self.coordinator.data[
+            "zone_data"
+        ][self.zone]["thermostat_led"]
+
+    async def async_turn_on(self, **kwargs) -> None:
+        """Allume la LED."""
+
+        await self.coordinator.async_write_thermostat_led(
+            self.zone,
+            True,
+        )
+
+    async def async_turn_off(self, **kwargs) -> None:
+        """Éteint la LED."""
+
+        await self.coordinator.async_write_thermostat_led(
+            self.zone,
+            False,
         )
