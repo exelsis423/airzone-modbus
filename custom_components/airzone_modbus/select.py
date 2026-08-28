@@ -82,7 +82,7 @@ class AirzoneMachineModeSelect(
         if not self.coordinator.data:
             return None
 
-        mode = self.coordinator.data.get("machine_mode")
+        mode = self.coordinator.data["machine"]["mode"]
 
         return MACHINE_MODES.get(mode)
 
