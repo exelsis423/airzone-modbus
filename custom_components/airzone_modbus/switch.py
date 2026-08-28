@@ -272,7 +272,7 @@ class AirzoneZoneThermostatLedSwitch(
     async def async_turn_on(self, **kwargs) -> None:
         """Allume la LED."""
 
-        await self.coordinator.async_write_thermostat_led(
+        await self.coordinator.async_write_zone_thermostat_led(
             self.zone,
             True,
         )
@@ -280,7 +280,7 @@ class AirzoneZoneThermostatLedSwitch(
     async def async_turn_off(self, **kwargs) -> None:
         """Éteint la LED."""
 
-        await self.coordinator.async_write_thermostat_led(
+        await self.coordinator.async_write_zone_thermostat_led(
             self.zone,
             False,
         )
