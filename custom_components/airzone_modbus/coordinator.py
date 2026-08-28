@@ -64,9 +64,9 @@ class AirzoneCoordinator(DataUpdateCoordinator):
             )
 
         try:
-            # --------------------------------------------------------
+            # ========================================================
             # MACHINE
-            # --------------------------------------------------------
+            # ========================================================
 
             zones = self.client.read_machine_zones(
                 slave=self.slave,
@@ -80,9 +80,9 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                 slave=self.slave,
             )
 
-            # --------------------------------------------------------
+            # ========================================================
             # ZONES
-            # --------------------------------------------------------
+            # ========================================================
 
             zone_data = {}
 
@@ -90,7 +90,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                 base_address = zone * 256
 
                 zone_data[zone] = {
+                    # ------------------------------------------------
                     # R00 - BIT 0
+                    # Ventilation locale
+                    # ------------------------------------------------
                     "local_ventilation": (
                         self.client.read_zone_local_ventilation(
                             base_address,
@@ -98,7 +101,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
+                    # ------------------------------------------------
                     # R00 - BIT 1
+                    # Programmation désactivée
+                    # ------------------------------------------------
                     "schedule_disabled": (
                         self.client.read_zone_schedule_disabled(
                             base_address,
@@ -106,7 +112,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
+                    # ------------------------------------------------
                     # R00 - BIT 2
+                    # État de la zone
+                    # ------------------------------------------------
                     "state": (
                         self.client.read_zone_state(
                             base_address,
@@ -114,7 +123,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
+                    # ------------------------------------------------
                     # R00 - BITS 4-5
+                    # Vitesse
+                    # ------------------------------------------------
                     "speed": (
                         self.client.read_zone_speed_name(
                             base_address,
@@ -122,7 +134,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
+                    # ------------------------------------------------
                     # R00 - BITS 6-7
+                    # Mode veille
+                    # ------------------------------------------------
                     "sleep_mode": (
                         self.client.read_zone_sleep_mode_name(
                             base_address,
@@ -130,7 +145,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
+                    # ------------------------------------------------
                     # R00 - BITS 8-11
+                    # Mode
+                    # ------------------------------------------------
                     "mode": (
                         self.client.read_zone_mode_name(
                             base_address,
@@ -138,7 +156,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
+                    # ------------------------------------------------
                     # R00 - BIT 12
+                    # Mode automatique
+                    # ------------------------------------------------
                     "automatic_mode": (
                         self.client.read_zone_automatic_mode(
                             base_address,
@@ -146,7 +167,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
+                    # ------------------------------------------------
                     # R00 - BIT 15
+                    # Fonction dépendante du système
+                    # ------------------------------------------------
                     "bit15": (
                         self.client.read_zone_bit15(
                             base_address,
@@ -154,7 +178,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
-                    # R03 - Consigne
+                    # ------------------------------------------------
+                    # R03
+                    # Consigne
+                    # ------------------------------------------------
                     "setpoint": (
                         self.client.read_zone_setpoint(
                             base_address,
@@ -162,7 +189,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
-                    # R08 - Température sonde
+                    # ------------------------------------------------
+                    # R08
+                    # Température sonde
+                    # ------------------------------------------------
                     "temperature": (
                         self.client.read_zone_temperature(
                             base_address,
@@ -170,7 +200,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
-                    # R10 - Température thermostat
+                    # ------------------------------------------------
+                    # R10
+                    # Température thermostat
+                    # ------------------------------------------------
                     "thermostat_temperature": (
                         self.client.read_zone_thermostat_temperature(
                             base_address,
@@ -178,7 +211,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
-                    # R14-R19 - Nom
+                    # ------------------------------------------------
+                    # R14-R19
+                    # Nom Airzone
+                    # ------------------------------------------------
                     "name": (
                         self.client.read_zone_name(
                             base_address,
@@ -186,7 +222,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
-                    # R26 - Bits 0-2 : Offset
+                    # ------------------------------------------------
+                    # R26 - BITS 0-2
+                    # Offset thermostat Lite
+                    # ------------------------------------------------
                     "thermostat_offset": (
                         self.client.read_thermostat_lite_setpoint_offset(
                             base_address,
@@ -194,7 +233,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
-                    # R26 - Bit 3 : LED
+                    # ------------------------------------------------
+                    # R26 - BIT 3
+                    # LED thermostat
+                    # ------------------------------------------------
                     "thermostat_led": (
                         self.client.read_thermostat_lite_status_led(
                             base_address,
@@ -202,7 +244,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
-                    # R26 - Bit 5 : Lite présent
+                    # ------------------------------------------------
+                    # R26 - BIT 5
+                    # Thermostat Lite présent
+                    # ------------------------------------------------
                     "thermostat_lite_present": (
                         self.client.read_thermostat_lite_present(
                             base_address,
@@ -210,7 +255,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
-                    # R31 - Humidité
+                    # ------------------------------------------------
+                    # R31
+                    # Humidité
+                    # ------------------------------------------------
                     "humidity": (
                         self.client.read_zone_humidity(
                             base_address,
