@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -23,22 +26,41 @@ async def async_setup_entry(
 
     coordinator: AirzoneCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    async_add_entities(
-        [
-            AirzoneMachineModeSensor(coordinator, entry),
-            AirzoneMachineSpeedSensor(coordinator, entry),
-            AirzoneMachineZonesSensor(coordinator, entry),
-        ]
-    )
+    entities = [
+        AirzoneMachineMode(coordinator, entry),
+        AirzoneMachineSpeed(coordinator, entry),
+    ]
+
+    for zone in coordinator.data["zones"]:
+        entities.extend(
+            [
+                AirzoneZoneSpeed(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
+                AirzoneZoneSleepMode(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
+                AirzoneZoneMode(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
+            ]
+        )
+
+    async_add_entities(entities)
 
 
-class AirzoneMachineModeSensor(
+class AirzoneMachineMode(
     CoordinatorEntity[AirzoneCoordinator],
     SensorEntity,
 ):
-    """Sensor for the Airzone machine operating mode."""
+    """Machine operating mode."""
 
-    _attr_name = "Airzone — Mode"
     _attr_icon = "mdi:air-conditioner"
 
     def __init__(
@@ -53,21 +75,22 @@ class AirzoneMachineModeSensor(
         self._attr_unique_id = (
             f"{entry.entry_id}_machine_mode"
         )
+        self._attr_name = "Airzone — Mode"
+
 
     @property
     def native_value(self) -> str:
-        """Return the current operating mode."""
+        """Return the machine mode."""
 
         return self.coordinator.data["machine"]["mode_name"]
 
 
-class AirzoneMachineSpeedSensor(
+class AirzoneMachineSpeed(
     CoordinatorEntity[AirzoneCoordinator],
     SensorEntity,
 ):
-    """Sensor for the Airzone machine fan speed."""
+    """Machine fan speed."""
 
-    _attr_name = "Airzone — Vitesse ventilation"
     _attr_icon = "mdi:fan"
 
     def __init__(
@@ -80,48 +103,123 @@ class AirzoneMachineSpeedSensor(
         super().__init__(coordinator)
 
         self._attr_unique_id = (
-            f"{entry.entry_id}_machine_fan_speed"
+            f"{entry.entry_id}_machine_speed"
         )
+        self._attr_name = (
+            "Airzone — Vitesse ventilation"
+        )
+
 
     @property
     def native_value(self) -> str:
-        """Return the current fan speed."""
+        """Return the machine fan speed."""
 
         return self.coordinator.data["machine"]["speed_name"]
 
 
-class AirzoneMachineZonesSensor(
+class AirzoneZoneSpeed(
     CoordinatorEntity[AirzoneCoordinator],
     SensorEntity,
 ):
-    """Sensor for the number of Airzone zones."""
+    """Fan speed of an Airzone zone."""
 
-    _attr_name = "Airzone — Zones présentes"
-    _attr_icon = "mdi:home-group"
+    _attr_icon = "mdi:fan"
 
     def __init__(
         self,
         coordinator: AirzoneCoordinator,
         entry: ConfigEntry,
+        zone: int,
     ) -> None:
         """Initialize the sensor."""
 
         super().__init__(coordinator)
 
+        self.zone = zone
+
         self._attr_unique_id = (
-            f"{entry.entry_id}_machine_zones"
+            f"{entry.entry_id}_zone_{zone}_speed"
+        )
+        self._attr_name = (
+            f"Airzone — Zone {zone} — Vitesse"
         )
 
     @property
-    def native_value(self) -> int:
-        """Return the number of zones."""
+    def native_value(self) -> str:
+        """Return the zone fan speed."""
 
-        return len(self.coordinator.data["zones"])
+        return self.coordinator.data["zone_data"][
+            self.zone
+        ]["speed"]
+
+
+class AirzoneZoneSleepMode(
+    CoordinatorEntity[AirzoneCoordinator],
+    SensorEntity,
+):
+    """Sleep mode of an Airzone zone."""
+
+    _attr_icon = "mdi:sleep"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        """Initialize the sensor."""
+
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_sleep_mode"
+        )
+        self._attr_name = (
+            f"Airzone — Zone {zone} — Mode veille"
+        )
 
     @property
-    def extra_state_attributes(self) -> dict:
-        """Return the list of present zones."""
+    def native_value(self) -> str:
+        """Return the zone sleep mode."""
 
-        return {
-            "zones": self.coordinator.data["zones"],
-        }
+        return self.coordinator.data["zone_data"][
+            self.zone
+        ]["sleep_mode"]
+
+
+class AirzoneZoneMode(
+    CoordinatorEntity[AirzoneCoordinator],
+    SensorEntity,
+):
+    """Operating mode of an Airzone zone."""
+
+    _attr_icon = "mdi:thermostat"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        """Initialize the sensor."""
+
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_mode"
+        )
+        self._attr_name = (
+            f"Airzone — Zone {zone} — Mode"
+        )
+
+    @property
+    def native_value(self) -> str:
+        """Return the zone operating mode."""
+
+        return self.coordinator.data["zone_data"][
+            self.zone
+        ]["mode"]
