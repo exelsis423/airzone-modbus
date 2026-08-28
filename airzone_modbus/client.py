@@ -1,3 +1,4 @@
+```python
 """Client Modbus pour les systèmes Airzone."""
 
 from pymodbus.client import ModbusTcpClient
@@ -333,19 +334,30 @@ class AirzoneClient:
     # ZONE - REGISTRE R26
     # ============================================================
 
-    def read_thermostat_lite_setpoint_offset(
+    def read_zone_r26(
         self,
         base_address: int,
         slave: int = 1,
-    ):
-        """Lit les bits 0-2 : offset thermostat Lite."""
+    ) -> int:
+        """Lit le registre R26."""
         registers = self.read_registers(
             address=base_address,
             count=27,
             slave=slave,
         )
 
-        value = registers[26] & 0b111
+        return registers[26]
+
+    def read_thermostat_lite_setpoint_offset(
+        self,
+        base_address: int,
+        slave: int = 1,
+    ):
+        """Lit les bits 0-2 : offset thermostat Lite."""
+        value = self.read_zone_r26(
+            base_address,
+            slave=slave,
+        )
 
         offsets = {
             0: -3,
@@ -357,7 +369,7 @@ class AirzoneClient:
             6: 3,
         }
 
-        return offsets.get(value)
+        return offsets.get(value & 0b111)
 
     def read_thermostat_lite_status_led(
         self,
@@ -365,15 +377,12 @@ class AirzoneClient:
         slave: int = 1,
     ):
         """Lit le bit 3 : LED thermostat."""
-        registers = self.read_registers(
-            address=base_address,
-            count=27,
+        value = self.read_zone_r26(
+            base_address,
             slave=slave,
         )
 
-        return bool(
-            registers[26] & (1 << 3)
-        )
+        return bool(value & (1 << 3))
 
     def read_thermostat_lite_present(
         self,
@@ -381,52 +390,30 @@ class AirzoneClient:
         slave: int = 1,
     ):
         """Lit le bit 5 : présence thermostat Lite."""
-        registers = self.read_registers(
-            address=base_address,
-            count=27,
+        value = self.read_zone_r26(
+            base_address,
             slave=slave,
         )
 
-        return bool(
-            registers[26] & (1 << 5)
-        )
+        return bool(value & (1 << 5))
 
-    def write_thermostat_lite_setpoint_offset(
+    def _modify_zone_r26(
         self,
         base_address: int,
-        offset: int,
+        mask: int,
+        value: int,
         slave: int = 1,
     ) -> None:
-        """Modifie les bits 0-2 : offset thermostat Lite."""
+        """Modifie certains bits de R26 sans toucher aux autres."""
 
-        if offset not in (-3, -2, -1, 0, 1, 2, 3):
-            raise ValueError(
-                f"Offset thermostat invalide : {offset}"
-            )
-
-        offset_values = {
-            -3: 0,
-            -2: 1,
-            -1: 2,
-             0: 3,
-             1: 4,
-             2: 5,
-             3: 6,
-        }
-
-        value = offset_values[offset]
-
-        registers = self.read_registers(
-            address=base_address,
-            count=27,
+        current = self.read_zone_r26(
+            base_address,
             slave=slave,
         )
 
-        current = registers[26]
-
         new_value = (
-            (current & ~0b111)
-            | value
+            (current & ~mask)
+            | (value & mask)
         )
 
         response = self.client.write_register(
@@ -437,9 +424,53 @@ class AirzoneClient:
 
         if response.isError():
             raise RuntimeError(
-                "Erreur Modbus écriture offset thermostat Lite : "
-                f"{response}"
+                f"Erreur Modbus écriture zone R26 : {response}"
             )
+
+    def write_thermostat_lite_setpoint_offset(
+        self,
+        base_address: int,
+        offset: int,
+        slave: int = 1,
+    ) -> None:
+        """Modifie les bits 0-2 de R26 pour l'offset thermostat Lite."""
+
+        if offset not in (-3, -2, -1, 0, 1, 2, 3):
+            raise ValueError(
+                f"Offset thermostat invalide : {offset}"
+            )
+
+        offset_values = {
+            -3: 0,
+            -2: 1,
+            -1: 2,
+            0: 3,
+            1: 4,
+            2: 5,
+            3: 6,
+        }
+
+        self._modify_zone_r26(
+            base_address,
+            mask=0b111,
+            value=offset_values[offset],
+            slave=slave,
+        )
+
+    def write_thermostat_lite_status_led(
+        self,
+        base_address: int,
+        enabled: bool,
+        slave: int = 1,
+    ) -> None:
+        """Active ou désactive le bit 3 de R26."""
+
+        self._modify_zone_r26(
+            base_address,
+            mask=(1 << 3),
+            value=(1 << 3) if enabled else 0,
+            slave=slave,
+        )
 
     # ============================================================
     # ZONE - REGISTRE R31
@@ -779,3 +810,4 @@ class AirzoneClient:
             value=(1 << 12) if enabled else 0,
             slave=slave,
         )
+```
