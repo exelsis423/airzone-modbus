@@ -209,6 +209,14 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                             slave=self.slave,
                         )
                     ),
+
+                    # R31 - Humidité
+                    "humidity": (
+                        self.client.read_zone_humidity(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
                 }
 
             return {
