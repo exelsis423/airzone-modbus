@@ -177,6 +177,14 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                             slave=self.slave,
                         )
                     ),
+
+                    # R14-R19 - Nom
+                    "name": (
+                        self.client.read_zone_name(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
                 }
 
             return {
