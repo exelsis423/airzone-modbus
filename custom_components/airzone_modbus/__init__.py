@@ -42,6 +42,7 @@ async def async_setup_entry(
         [
             "sensor",
             "binary_sensor",
+            "select",
         ],
     )
 
@@ -59,6 +60,7 @@ async def async_unload_entry(
         [
             "sensor",
             "binary_sensor",
+            "select",
         ],
     )
 
@@ -69,3 +71,4 @@ async def async_unload_entry(
         )
 
     return unload_ok
+
