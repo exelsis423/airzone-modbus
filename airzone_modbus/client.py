@@ -263,7 +263,69 @@ class AirzoneClient:
         )
 
         return registers[3] / 10.0
-
+        
+    def write_zone_setpoint(
+            self,
+            base_address: int,
+            setpoint: float,
+            slave: int = 1,
+        ) -> None:
+            """Écrit la consigne dans le registre R03."""
+    
+            if setpoint < 18 or setpoint > 30:
+                raise ValueError(
+                    f"Consigne invalide : {setpoint}"
+                )
+    
+            if (setpoint * 2) % 1 != 0:
+                raise ValueError(
+                    f"Consigne invalide : {setpoint}"
+                )
+    
+            value = int(setpoint * 10)
+    
+            response = self.client.write_register(
+                address=base_address + 3,
+                value=value,
+                device_id=slave,
+            )
+    
+            if response.isError():
+                raise RuntimeError(
+                    f"Erreur Modbus écriture consigne : {response}"
+                )
+    
+        def write_zone_setpoint(
+            self,
+            base_address: int,
+            setpoint: float,
+            slave: int = 1,
+        ) -> None:
+            """Écrit la consigne dans le registre R03."""
+    
+            if setpoint < 18 or setpoint > 30:
+                raise ValueError(
+                    f"Consigne invalide : {setpoint}"
+                )
+    
+            if (setpoint * 2) % 1 != 0:
+                raise ValueError(
+                    f"Consigne invalide : {setpoint}"
+                )
+    
+            value = int(setpoint * 10)
+    
+            response = self.client.write_register(
+                address=base_address + 3,
+                value=value,
+                device_id=slave,
+            )
+    
+            if response.isError():
+                raise RuntimeError(
+                    f"Erreur Modbus écriture consigne : {response}"
+                )
+                
     # ============================================================
     # ZONE - REGISTRE R08
     # ============================================================
