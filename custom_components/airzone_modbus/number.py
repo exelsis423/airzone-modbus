@@ -94,7 +94,7 @@ class AirzoneZoneThermostatOffsetNumber(
     ) -> None:
         """Modifie l'offset du thermostat."""
 
-        await self.coordinator.async_write_thermostat_lite_setpoint_offset(
+        await self.coordinator.async_write_zone_thermostat_offset(
             self.zone,
             int(value),
         )
