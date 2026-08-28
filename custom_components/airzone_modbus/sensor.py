@@ -71,6 +71,11 @@ async def async_setup_entry(
                     entry,
                     zone,
                 ),
+                AirzoneZoneThermostatOffset(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
             ]
         )
 
@@ -378,3 +383,39 @@ class AirzoneZoneName(
         return self.coordinator.data["zone_data"][
             self.zone
         ]["name"]
+
+
+class AirzoneZoneThermostatOffset(
+    CoordinatorEntity[AirzoneCoordinator],
+    SensorEntity,
+):
+    """Thermostat Lite temperature offset."""
+
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:thermometer-plus"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_thermostat_offset"
+        )
+        self._attr_name = (
+            f"Airzone — Zone {zone} — Offset température"
+        )
+
+    @property
+    def native_value(self) -> float:
+        """Return the thermostat temperature offset."""
+
+        return self.coordinator.data["zone_data"][
+            self.zone
+        ]["thermostat_offset"]
