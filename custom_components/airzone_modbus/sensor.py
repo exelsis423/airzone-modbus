@@ -33,11 +33,7 @@ async def async_setup_entry(
         DOMAIN
     ][entry.entry_id]
 
-    entities = [
-        # MACHINE
-        AirzoneMachineMode(coordinator, entry),
-        AirzoneMachineSpeed(coordinator, entry),
-    ]
+    entities = []
 
     for zone in coordinator.data["zones"]:
         entities.extend(
@@ -104,71 +100,6 @@ async def async_setup_entry(
         )
 
     async_add_entities(entities)
-
-
-# ============================================================
-# MACHINE
-# ============================================================
-
-
-class AirzoneMachineMode(
-    CoordinatorEntity[AirzoneCoordinator],
-    SensorEntity,
-):
-    """Machine operating mode."""
-
-    _attr_icon = "mdi:air-conditioner"
-
-    def __init__(
-        self,
-        coordinator,
-        entry: ConfigEntry,
-    ) -> None:
-        super().__init__(coordinator)
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_machine_mode"
-        )
-
-        self._attr_name = "Airzone — Mode"
-
-    @property
-    def native_value(self) -> str:
-        """Return the machine mode."""
-        return self.coordinator.data[
-            "machine"
-        ]["mode_name"]
-
-
-class AirzoneMachineSpeed(
-    CoordinatorEntity[AirzoneCoordinator],
-    SensorEntity,
-):
-    """Machine fan speed."""
-
-    _attr_icon = "mdi:fan"
-
-    def __init__(
-        self,
-        coordinator,
-        entry: ConfigEntry,
-    ) -> None:
-        super().__init__(coordinator)
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_machine_speed"
-        )
-
-        self._attr_name = (
-            "Airzone — Vitesse ventilation"
-        )
-
-    @property
-    def native_value(self) -> str:
-        """Return the machine fan speed."""
-        return self.coordinator.data[
-            "machine"
-        ]["speed_name"]
 
 
 # ============================================================
@@ -265,7 +196,7 @@ class AirzoneZoneMode(
     def __init__(
         self,
         coordinator,
-        entry: ConfigEntry,
+        entry,
         zone: int,
     ) -> None:
         super().__init__(coordinator)
@@ -309,7 +240,7 @@ class AirzoneZoneSetpoint(
     def __init__(
         self,
         coordinator,
-        entry: ConfigEntry,
+        entry,
         zone: int,
     ) -> None:
         super().__init__(coordinator)
@@ -353,7 +284,7 @@ class AirzoneZoneTemperature(
     def __init__(
         self,
         coordinator,
-        entry: ConfigEntry,
+        entry,
         zone: int,
     ) -> None:
         super().__init__(coordinator)
@@ -397,7 +328,7 @@ class AirzoneZoneThermostatTemperature(
     def __init__(
         self,
         coordinator,
-        entry: ConfigEntry,
+        entry,
         zone: int,
     ) -> None:
         super().__init__(coordinator)
@@ -437,7 +368,7 @@ class AirzoneZoneName(
     def __init__(
         self,
         coordinator,
-        entry: ConfigEntry,
+        entry,
         zone: int,
     ) -> None:
         super().__init__(coordinator)
@@ -480,7 +411,7 @@ class AirzoneZoneThermostatOffset(
     def __init__(
         self,
         coordinator,
-        entry: ConfigEntry,
+        entry,
         zone: int,
     ) -> None:
         super().__init__(coordinator)
@@ -523,7 +454,7 @@ class AirzoneZoneHumidity(
     def __init__(
         self,
         coordinator,
-        entry: ConfigEntry,
+        entry,
         zone: int,
     ) -> None:
         super().__init__(coordinator)
@@ -544,3 +475,4 @@ class AirzoneZoneHumidity(
         return self.coordinator.data[
             "zone_data"
         ][self.zone]["humidity"]
+
