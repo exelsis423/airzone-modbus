@@ -38,23 +38,6 @@ async def async_setup_entry(
     for zone in coordinator.data["zones"]:
         entities.extend(
             [
-                # R00
-                AirzoneZoneSpeed(
-                    coordinator,
-                    entry,
-                    zone,
-                ),
-                AirzoneZoneSleepMode(
-                    coordinator,
-                    entry,
-                    zone,
-                ),
-                AirzoneZoneMode(
-                    coordinator,
-                    entry,
-                    zone,
-                ),
-
                 # R03
                 AirzoneZoneSetpoint(
                     coordinator,
@@ -100,123 +83,6 @@ async def async_setup_entry(
         )
 
     async_add_entities(entities)
-
-
-# ============================================================
-# ZONE - R00 BITS 4-5
-# ============================================================
-
-
-class AirzoneZoneSpeed(
-    CoordinatorEntity[AirzoneCoordinator],
-    SensorEntity,
-):
-    """Zone fan speed."""
-
-    _attr_icon = "mdi:fan"
-
-    def __init__(
-        self,
-        coordinator,
-        entry: ConfigEntry,
-        zone: int,
-    ) -> None:
-        super().__init__(coordinator)
-
-        self.zone = zone
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_zone_{zone}_speed"
-        )
-
-        self._attr_name = (
-            f"Airzone — Zone {zone} — Vitesse"
-        )
-
-    @property
-    def native_value(self) -> str:
-        """Return the zone fan speed."""
-        return self.coordinator.data[
-            "zone_data"
-        ][self.zone]["speed"]
-
-
-# ============================================================
-# ZONE - R00 BITS 6-7
-# ============================================================
-
-
-class AirzoneZoneSleepMode(
-    CoordinatorEntity[AirzoneCoordinator],
-    SensorEntity,
-):
-    """Zone sleep mode."""
-
-    _attr_icon = "mdi:sleep"
-
-    def __init__(
-        self,
-        coordinator,
-        entry: ConfigEntry,
-        zone: int,
-    ) -> None:
-        super().__init__(coordinator)
-
-        self.zone = zone
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_zone_{zone}_sleep_mode"
-        )
-
-        self._attr_name = (
-            f"Airzone — Zone {zone} — Mode veille"
-        )
-
-    @property
-    def native_value(self) -> str:
-        """Return the zone sleep mode."""
-        return self.coordinator.data[
-            "zone_data"
-        ][self.zone]["sleep_mode"]
-
-
-# ============================================================
-# ZONE - R00 BITS 8-11
-# ============================================================
-
-
-class AirzoneZoneMode(
-    CoordinatorEntity[AirzoneCoordinator],
-    SensorEntity,
-):
-    """Zone operating mode."""
-
-    _attr_icon = "mdi:thermostat"
-
-    def __init__(
-        self,
-        coordinator,
-        entry,
-        zone: int,
-    ) -> None:
-        super().__init__(coordinator)
-
-        self.zone = zone
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_zone_{zone}_mode"
-        )
-
-        self._attr_name = (
-            f"Airzone — Zone {zone} — Mode"
-        )
-
-    @property
-    def native_value(self) -> str:
-        """Return the zone operating mode."""
-        return self.coordinator.data[
-            "zone_data"
-        ][self.zone]["mode"]
 
 
 # ============================================================
@@ -475,4 +341,3 @@ class AirzoneZoneHumidity(
         return self.coordinator.data[
             "zone_data"
         ][self.zone]["humidity"]
-
