@@ -31,8 +31,6 @@ class AirzoneCoordinator(DataUpdateCoordinator):
         port: int = DEFAULT_PORT,
         slave: int = DEFAULT_SLAVE,
     ) -> None:
-        """Initialise le coordinator."""
-
         self.client = AirzoneClient(host, port)
         self.slave = slave
 
@@ -45,7 +43,6 @@ class AirzoneCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Récupère les données Airzone."""
-
         try:
             return await self.hass.async_add_executor_job(
                 self._update_data
@@ -58,7 +55,6 @@ class AirzoneCoordinator(DataUpdateCoordinator):
 
     def _update_data(self):
         """Lecture synchrone des données."""
-
         if not self.client.connect():
             raise RuntimeError(
                 "Impossible de se connecter à Airzone"
@@ -66,37 +62,47 @@ class AirzoneCoordinator(DataUpdateCoordinator):
 
         try:
             # --------------------------------------------------------
-            # MACHINE - R00
-            # --------------------------------------------------------
-
-            register_0 = self.client.read_machine_register_0(
-                slave=self.slave,
-            )
-
-            mode = register_0 & 0x01FF
-            speed = (register_0 >> 9) & 0b11
-
-            # --------------------------------------------------------
-            # MACHINE - R09
+            # MACHINE
             # --------------------------------------------------------
 
             zones = self.client.read_machine_zones(
                 slave=self.slave,
             )
 
+            machine_mode = self.client.read_machine_mode_name(
+                slave=self.slave,
+            )
+
+            machine_speed = self.client.read_machine_speed_name(
+                slave=self.slave,
+            )
+
+            # --------------------------------------------------------
+            # ZONES
+            # --------------------------------------------------------
+
+            zone_data = {}
+
+            for zone in zones:
+                base_address = zone * 256
+
+                zone_data[zone] = {
+                    # R00 - BIT 0
+                    "local_ventilation": (
+                        self.client.read_zone_local_ventilation(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
+                }
+
             return {
                 "machine": {
-                    "register_0": register_0,
-                    "mode": mode,
-                    "mode_name": self.client.read_machine_mode_name(
-                        slave=self.slave,
-                    ),
-                    "speed": speed,
-                    "speed_name": self.client.read_machine_speed_name(
-                        slave=self.slave,
-                    ),
+                    "mode_name": machine_mode,
+                    "speed_name": machine_speed,
                 },
                 "zones": zones,
+                "zone_data": zone_data,
             }
 
         finally:
