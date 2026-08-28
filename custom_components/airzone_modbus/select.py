@@ -1,3 +1,4 @@
+```python
 """Select entities for Airzone Modbus."""
 
 from __future__ import annotations
@@ -41,12 +42,20 @@ async def async_setup_entry(
 ) -> None:
     """Configure les selects machine."""
 
-    coordinator: AirzoneCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: AirzoneCoordinator = hass.data[
+        DOMAIN
+    ][entry.entry_id]
 
     async_add_entities(
         [
-            AirzoneMachineModeSelect(coordinator, entry),
-            AirzoneMachineSpeedSelect(coordinator, entry),
+            AirzoneMachineModeSelect(
+                coordinator,
+                entry,
+            ),
+            AirzoneMachineSpeedSelect(
+                coordinator,
+                entry,
+            ),
         ]
     )
 
@@ -57,8 +66,8 @@ class AirzoneMachineModeSelect(
 ):
     """Sélecteur du mode machine."""
 
-    _attr_has_entity_name = True
-    _attr_name = "Mode"
+    _attr_has_entity_name = False
+    _attr_name = "Airzone — Mode"
     _attr_icon = "mdi:air-conditioner"
 
     def __init__(
@@ -69,7 +78,9 @@ class AirzoneMachineModeSelect(
         super().__init__(coordinator)
 
         self._entry = entry
-        self._attr_unique_id = f"{entry.entry_id}_machine_mode"
+        self._attr_unique_id = (
+            f"{entry.entry_id}_machine_mode"
+        )
 
     @property
     def options(self) -> list[str]:
@@ -83,11 +94,16 @@ class AirzoneMachineModeSelect(
         if not self.coordinator.data:
             return None
 
-        mode = self.coordinator.data["machine"]["mode"]
+        mode = self.coordinator.data[
+            "machine"
+        ]["mode"]
 
         return MACHINE_MODES.get(mode)
 
-    async def async_select_option(self, option: str) -> None:
+    async def async_select_option(
+        self,
+        option: str,
+    ) -> None:
         """Change le mode machine."""
 
         mode = next(
@@ -96,7 +112,9 @@ class AirzoneMachineModeSelect(
             if name == option
         )
 
-        await self.coordinator.async_write_machine_mode(mode)
+        await self.coordinator.async_write_machine_mode(
+            mode
+        )
 
 
 class AirzoneMachineSpeedSelect(
@@ -105,8 +123,8 @@ class AirzoneMachineSpeedSelect(
 ):
     """Sélecteur de la vitesse machine."""
 
-    _attr_has_entity_name = True
-    _attr_name = "Vitesse ventilation"
+    _attr_has_entity_name = False
+    _attr_name = "Airzone — Vitesse ventilation"
     _attr_icon = "mdi:fan"
 
     def __init__(
@@ -117,7 +135,9 @@ class AirzoneMachineSpeedSelect(
         super().__init__(coordinator)
 
         self._entry = entry
-        self._attr_unique_id = f"{entry.entry_id}_machine_speed"
+        self._attr_unique_id = (
+            f"{entry.entry_id}_machine_speed"
+        )
 
     @property
     def options(self) -> list[str]:
@@ -131,11 +151,16 @@ class AirzoneMachineSpeedSelect(
         if not self.coordinator.data:
             return None
 
-        speed = self.coordinator.data["machine"]["speed"]
+        speed = self.coordinator.data[
+            "machine"
+        ]["speed"]
 
         return MACHINE_SPEEDS.get(speed)
 
-    async def async_select_option(self, option: str) -> None:
+    async def async_select_option(
+        self,
+        option: str,
+    ) -> None:
         """Change la vitesse machine."""
 
         speed = next(
@@ -144,5 +169,7 @@ class AirzoneMachineSpeedSelect(
             if name == option
         )
 
-        await self.coordinator.async_write_machine_speed(speed)
-
+        await self.coordinator.async_write_machine_speed(
+            speed
+        )
+```
