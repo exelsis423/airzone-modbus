@@ -4,16 +4,11 @@ from pymodbus.client import ModbusTcpClient
 
 
 class AirzoneClient:
-    """Client de communication avec Airzone."""
+    """Client minimal de communication avec Airzone."""
 
-    def __init__(
-        self,
-        host: str,
-        port: int = 8899,
-    ):
+    def __init__(self, host: str, port: int = 8899):
         self.host = host
         self.port = port
-
         self.client = ModbusTcpClient(
             host=self.host,
             port=self.port,
@@ -71,28 +66,17 @@ class AirzoneClient:
     # ZONE - REGISTRE R00
     # ============================================================
 
-    def read_zone_r00(
-        self,
-        base_address: int,
-        slave: int = 1,
-    ) -> int:
-        """Lit le registre R00 d'une zone."""
-        return self.read_registers(
-            address=base_address,
-            count=1,
-            slave=slave,
-        )[0]
-
     def read_zone_local_ventilation(
         self,
         base: int,
         slave: int = 1,
-    ) -> bool:
+    ):
         """Lit le bit 0 : ventilation locale."""
-        value = self.read_zone_r00(
-            base,
+        value = self.read_registers(
+            address=base,
+            count=1,
             slave=slave,
-        )
+        )[0]
 
         return bool(value & (1 << 0))
 
@@ -100,12 +84,13 @@ class AirzoneClient:
         self,
         base: int,
         slave: int = 1,
-    ) -> bool:
+    ):
         """Lit le bit 1 : programmation désactivée."""
-        value = self.read_zone_r00(
-            base,
+        value = self.read_registers(
+            address=base,
+            count=1,
             slave=slave,
-        )
+        )[0]
 
         return bool(value & (1 << 1))
 
@@ -113,33 +98,35 @@ class AirzoneClient:
         self,
         base_address: int,
         slave: int = 1,
-    ) -> bool:
+    ):
         """Lit le bit 2 : état de la zone."""
-        value = self.read_zone_r00(
-            base_address,
+        registers = self.read_registers(
+            address=base_address,
+            count=1,
             slave=slave,
         )
 
-        return bool(value & (1 << 2))
+        return bool(registers[0] & (1 << 2))
 
     def read_zone_speed(
         self,
         base_address: int,
         slave: int = 1,
-    ) -> int:
+    ):
         """Lit les bits 4-5 : vitesse."""
-        value = self.read_zone_r00(
-            base_address,
+        registers = self.read_registers(
+            address=base_address,
+            count=1,
             slave=slave,
         )
 
-        return (value >> 4) & 0b11
+        return (registers[0] >> 4) & 0b11
 
     def read_zone_speed_name(
         self,
         base_address: int,
         slave: int = 1,
-    ) -> str:
+    ):
         """Retourne le nom de la vitesse."""
         speed = self.read_zone_speed(
             base_address,
@@ -162,12 +149,13 @@ class AirzoneClient:
         self,
         base: int,
         slave: int = 1,
-    ) -> int:
+    ):
         """Lit les bits 6-7 : mode veille."""
-        value = self.read_zone_r00(
-            base,
+        value = self.read_registers(
+            address=base,
+            count=1,
             slave=slave,
-        )
+        )[0]
 
         return (value >> 6) & 0x03
 
@@ -175,7 +163,7 @@ class AirzoneClient:
         self,
         base: int,
         slave: int = 1,
-    ) -> str:
+    ):
         """Retourne le nom du mode veille."""
         modes = {
             0: "Veille Off",
@@ -187,7 +175,7 @@ class AirzoneClient:
         return modes.get(
             self.read_zone_sleep_mode(
                 base,
-                slave=slave,
+                slave,
             ),
             "Inconnu",
         )
@@ -196,20 +184,21 @@ class AirzoneClient:
         self,
         base_address: int,
         slave: int = 1,
-    ) -> int:
+    ):
         """Lit les bits 8-11 : mode de la zone."""
-        value = self.read_zone_r00(
-            base_address,
+        registers = self.read_registers(
+            address=base_address,
+            count=1,
             slave=slave,
         )
 
-        return (value >> 8) & 0x0F
+        return (registers[0] >> 8) & 0x0F
 
     def read_zone_mode_name(
         self,
         base_address: int,
         slave: int = 1,
-    ) -> str:
+    ):
         """Retourne le nom du mode."""
         mode = self.read_zone_mode(
             base_address,
@@ -233,12 +222,13 @@ class AirzoneClient:
         self,
         base: int,
         slave: int = 1,
-    ) -> bool:
+    ):
         """Lit le bit 12 : mode automatique."""
-        value = self.read_zone_r00(
-            base,
+        value = self.read_registers(
+            address=base,
+            count=1,
             slave=slave,
-        )
+        )[0]
 
         return bool(value & (1 << 12))
 
@@ -246,12 +236,13 @@ class AirzoneClient:
         self,
         base: int,
         slave: int = 1,
-    ) -> bool:
+    ):
         """Lit le bit 15."""
-        value = self.read_zone_r00(
-            base,
+        value = self.read_registers(
+            address=base,
+            count=1,
             slave=slave,
-        )
+        )[0]
 
         return bool(value & (1 << 15))
 
@@ -263,7 +254,7 @@ class AirzoneClient:
         self,
         base_address: int,
         slave: int = 1,
-    ) -> float:
+    ):
         """Lit la consigne en dixièmes de degré Celsius."""
         registers = self.read_registers(
             address=base_address,
@@ -281,7 +272,7 @@ class AirzoneClient:
         self,
         base_address: int,
         slave: int = 1,
-    ) -> float:
+    ):
         """Lit la température de la sonde à distance."""
         registers = self.read_registers(
             address=base_address,
@@ -299,7 +290,7 @@ class AirzoneClient:
         self,
         base: int,
         slave: int = 1,
-    ) -> float:
+    ):
         """Lit la température locale du thermostat."""
         registers = self.read_input_registers(
             address=base + 10,
@@ -317,7 +308,7 @@ class AirzoneClient:
         self,
         base_address: int,
         slave: int = 1,
-    ) -> str:
+    ):
         """Lit le nom de la zone."""
         registers = self.read_registers(
             address=base_address,
@@ -342,27 +333,19 @@ class AirzoneClient:
     # ZONE - REGISTRE R26
     # ============================================================
 
-    def read_zone_r26(
+    def read_thermostat_lite_setpoint_offset(
         self,
         base_address: int,
         slave: int = 1,
-    ) -> int:
-        """Lit le registre R26 d'une zone."""
+    ):
+        """Lit les bits 0-2 : offset thermostat Lite."""
         registers = self.read_registers(
-            address=base_address + 26,
-            count=1,
+            address=base_address,
+            count=27,
             slave=slave,
         )
 
-        return registers[0]
-
-    def decode_thermostat_lite_offset(
-        self,
-        value: int,
-    ) -> int | None:
-        """Décode les bits 0-2 du registre R26."""
-
-        offset_value = value & 0b111
+        value = registers[26] & 0b111
 
         offsets = {
             0: -3,
@@ -374,78 +357,39 @@ class AirzoneClient:
             6: 3,
         }
 
-        return offsets.get(offset_value)
-
-    def decode_thermostat_lite_led(
-        self,
-        value: int,
-    ) -> bool:
-        """Décode le bit 3 du registre R26."""
-        return bool(value & (1 << 3))
-
-    def decode_thermostat_lite_present(
-        self,
-        value: int,
-    ) -> bool:
-        """Décode le bit 5 du registre R26."""
-        return bool(value & (1 << 5))
-
-    def read_thermostat_lite_setpoint_offset(
-        self,
-        base_address: int,
-        slave: int = 1,
-    ) -> int | None:
-        """Lit et décode l'offset du thermostat Lite."""
-        value = self.read_zone_r26(
-            base_address,
-            slave=slave,
-        )
-
-        return self.decode_thermostat_lite_offset(value)
+        return offsets.get(value)
 
     def read_thermostat_lite_status_led(
         self,
         base_address: int,
         slave: int = 1,
-    ) -> bool:
-        """Lit et décode le statut LED du thermostat Lite."""
-        value = self.read_zone_r26(
-            base_address,
+    ):
+        """Lit le bit 3 : LED thermostat."""
+        registers = self.read_registers(
+            address=base_address,
+            count=27,
             slave=slave,
         )
 
-        return self.decode_thermostat_lite_led(value)
+        return bool(
+            registers[26] & (1 << 3)
+        )
 
     def read_thermostat_lite_present(
         self,
         base_address: int,
         slave: int = 1,
-    ) -> bool:
-        """Lit et décode la présence du thermostat Lite."""
-        value = self.read_zone_r26(
-            base_address,
+    ):
+        """Lit le bit 5 : présence thermostat Lite."""
+        registers = self.read_registers(
+            address=base_address,
+            count=27,
             slave=slave,
         )
 
-        return self.decode_thermostat_lite_present(value)
-
-    def write_zone_r26(
-        self,
-        base_address: int,
-        value: int,
-        slave: int = 1,
-    ) -> None:
-        """Écrit le registre R26 complet d'une zone."""
-        response = self.client.write_register(
-            address=base_address + 26,
-            value=value,
-            device_id=slave,
+        return bool(
+            registers[26] & (1 << 5)
         )
-
-        if response.isError():
-            raise RuntimeError(
-                f"Erreur Modbus écriture zone R26 : {response}"
-            )
 
     def write_thermostat_lite_setpoint_offset(
         self,
@@ -455,36 +399,47 @@ class AirzoneClient:
     ) -> None:
         """Modifie les bits 0-2 : offset thermostat Lite."""
 
-        offsets = {
-            -3: 0,
-            -2: 1,
-            -1: 2,
-            0: 3,
-            1: 4,
-            2: 5,
-            3: 6,
-        }
-
-        if offset not in offsets:
+        if offset not in (-3, -2, -1, 0, 1, 2, 3):
             raise ValueError(
                 f"Offset thermostat invalide : {offset}"
             )
 
-        current = self.read_zone_r26(
-            base_address,
+        offset_values = {
+            -3: 0,
+            -2: 1,
+            -1: 2,
+             0: 3,
+             1: 4,
+             2: 5,
+             3: 6,
+        }
+
+        value = offset_values[offset]
+
+        registers = self.read_registers(
+            address=base_address,
+            count=27,
             slave=slave,
         )
+
+        current = registers[26]
 
         new_value = (
             (current & ~0b111)
-            | offsets[offset]
+            | value
         )
 
-        self.write_zone_r26(
-            base_address,
-            new_value,
-            slave=slave,
+        response = self.client.write_register(
+            address=base_address + 26,
+            value=new_value,
+            device_id=slave,
         )
+
+        if response.isError():
+            raise RuntimeError(
+                "Erreur Modbus écriture offset thermostat Lite : "
+                f"{response}"
+            )
 
     # ============================================================
     # ZONE - REGISTRE R31
@@ -494,7 +449,7 @@ class AirzoneClient:
         self,
         base_address: int,
         slave: int = 1,
-    ) -> int:
+    ):
         """Lit l'humidité."""
         registers = self.read_registers(
             address=base_address,
@@ -511,7 +466,7 @@ class AirzoneClient:
     def read_machine_register_0(
         self,
         slave: int = 1,
-    ) -> int:
+    ):
         """Lit le registre R00 de la machine."""
         registers = self.read_registers(
             address=0,
@@ -524,7 +479,7 @@ class AirzoneClient:
     def read_machine_mode(
         self,
         slave: int = 1,
-    ) -> int:
+    ):
         """Lit le mode de fonctionnement de la machine."""
         value = self.read_machine_register_0(slave)
         return value & 0x01FF
@@ -532,7 +487,7 @@ class AirzoneClient:
     def read_machine_mode_name(
         self,
         slave: int = 1,
-    ) -> str:
+    ):
         """Retourne le nom du mode machine."""
         modes = {
             0: "Arrêt",
@@ -558,7 +513,7 @@ class AirzoneClient:
     def read_machine_speed(
         self,
         slave: int = 1,
-    ) -> int:
+    ):
         """Lit les bits 9-10 : vitesse machine."""
         value = self.read_machine_register_0(slave)
         return (value >> 9) & 0b11
@@ -566,7 +521,7 @@ class AirzoneClient:
     def read_machine_speed_name(
         self,
         slave: int = 1,
-    ) -> str:
+    ):
         """Retourne le nom de la vitesse machine."""
         speeds = {
             0: "Automatique",
@@ -589,7 +544,7 @@ class AirzoneClient:
     def read_machine_zones(
         self,
         slave: int = 1,
-    ) -> list[int]:
+    ):
         """Lit les zones présentes."""
         registers = self.read_registers(
             address=9,
@@ -608,7 +563,7 @@ class AirzoneClient:
     def read_machine_zone_bases(
         self,
         slave: int = 1,
-    ) -> list[int]:
+    ):
         """Retourne les adresses de base des zones."""
         zones = self.read_machine_zones(slave)
 
@@ -623,9 +578,9 @@ class AirzoneClient:
 
     def write_machine_mode(
         self,
-        mode: int,
+        mode,
         slave: int = 1,
-    ) -> None:
+    ):
         """Modifie le mode de fonctionnement de la machine."""
         current = self.read_machine_register_0(slave)
 
@@ -648,9 +603,9 @@ class AirzoneClient:
 
     def write_machine_speed(
         self,
-        speed: int,
+        speed,
         slave: int = 1,
-    ) -> None:
+    ):
         """Modifie la vitesse de ventilation de la machine."""
         current = self.read_machine_register_0(slave)
 
@@ -682,6 +637,7 @@ class AirzoneClient:
         slave: int = 1,
     ) -> None:
         """Écrit le registre R00 complet d'une zone."""
+
         response = self.client.write_register(
             address=base_address,
             value=value,
@@ -701,10 +657,12 @@ class AirzoneClient:
         slave: int = 1,
     ) -> None:
         """Modifie certains bits de R00 sans toucher aux autres."""
-        current = self.read_zone_r00(
-            base_address,
+
+        current = self.read_registers(
+            address=base_address,
+            count=1,
             slave=slave,
-        )
+        )[0]
 
         new_value = (
             (current & ~mask)
@@ -724,6 +682,7 @@ class AirzoneClient:
         slave: int = 1,
     ) -> None:
         """Active ou désactive les programmations horaires."""
+
         self._modify_zone_r00(
             base_address,
             mask=(1 << 1),
@@ -738,6 +697,7 @@ class AirzoneClient:
         slave: int = 1,
     ) -> None:
         """Active ou désactive la zone."""
+
         self._modify_zone_r00(
             base_address,
             mask=(1 << 2),
@@ -752,6 +712,7 @@ class AirzoneClient:
         slave: int = 1,
     ) -> None:
         """Modifie la vitesse de ventilation de la zone."""
+
         if speed not in (0, 1, 2, 3):
             raise ValueError(
                 f"Vitesse de zone invalide : {speed}"
@@ -771,6 +732,7 @@ class AirzoneClient:
         slave: int = 1,
     ) -> None:
         """Modifie le mode veille de la zone."""
+
         if sleep_mode not in (0, 1, 2, 3):
             raise ValueError(
                 f"Mode veille de zone invalide : {sleep_mode}"
@@ -790,6 +752,7 @@ class AirzoneClient:
         slave: int = 1,
     ) -> None:
         """Modifie le mode de fonctionnement de la zone."""
+
         if mode not in (0, 1, 3, 5, 6):
             raise ValueError(
                 f"Mode de zone invalide : {mode}"
@@ -809,6 +772,7 @@ class AirzoneClient:
         slave: int = 1,
     ) -> None:
         """Active ou désactive le mode automatique."""
+
         self._modify_zone_r00(
             base_address,
             mask=(1 << 12),
