@@ -39,7 +39,7 @@ MACHINE_SPEEDS = {
 
 
 # ============================================================
-# ZONE - R00
+# ZONE
 # ============================================================
 
 ZONE_MODES = {
@@ -63,6 +63,27 @@ ZONE_SLEEP_MODES = {
     2: "Veille 60",
     3: "Veille 90",
 }
+
+
+# ============================================================
+# R26 - BITS 0-2
+# OFFSET THERMOSTAT
+# ============================================================
+
+ZONE_THERMOSTAT_OFFSETS = {
+    0: "-3 °C",
+    1: "-2 °C",
+    2: "-1 °C",
+    3: "0 °C",
+    4: "+1 °C",
+    5: "+2 °C",
+    6: "+3 °C",
+}
+
+
+# ============================================================
+# SETUP
+# ============================================================
 
 
 async def async_setup_entry(
@@ -112,6 +133,11 @@ async def async_setup_entry(
                     entry,
                     zone,
                 ),
+                AirzoneZoneThermostatOffsetSelect(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
             ]
         )
 
@@ -140,7 +166,6 @@ class AirzoneMachineModeSelect(
     ) -> None:
         super().__init__(coordinator)
 
-        self._entry = entry
         self._attr_unique_id = (
             f"{entry.entry_id}_machine_mode"
         )
@@ -202,7 +227,6 @@ class AirzoneMachineSpeedSelect(
     ) -> None:
         super().__init__(coordinator)
 
-        self._entry = entry
         self._attr_unique_id = (
             f"{entry.entry_id}_machine_speed"
         )
@@ -291,7 +315,7 @@ class AirzoneZoneModeSelect(
             "zone_data"
         ][self.zone]["mode"]
 
-        return mode
+        return ZONE_MODES.get(mode)
 
     async def async_select_option(
         self,
@@ -360,7 +384,7 @@ class AirzoneZoneSpeedSelect(
             "zone_data"
         ][self.zone]["speed"]
 
-        return speed
+        return ZONE_SPEEDS.get(speed)
 
     async def async_select_option(
         self,
@@ -429,7 +453,7 @@ class AirzoneZoneSleepModeSelect(
             "zone_data"
         ][self.zone]["sleep_mode"]
 
-        return sleep_mode
+        return ZONE_SLEEP_MODES.get(sleep_mode)
 
     async def async_select_option(
         self,
@@ -446,4 +470,76 @@ class AirzoneZoneSleepModeSelect(
         await self.coordinator.async_write_zone_sleep_mode(
             self.zone,
             sleep_mode,
+        )
+
+
+# ============================================================
+# ZONE - OFFSET THERMOSTAT
+# R26 bits 0-2
+# ============================================================
+
+
+class AirzoneZoneThermostatOffsetSelect(
+    CoordinatorEntity[AirzoneCoordinator],
+    SelectEntity,
+):
+    """Sélecteur de l'offset de température du thermostat."""
+
+    _attr_has_entity_name = False
+    _attr_icon = "mdi:thermometer-plus"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_thermostat_offset"
+        )
+
+        self._attr_name = (
+            f"Airzone — Zone {zone} — "
+            "Offset température"
+        )
+
+    @property
+    def options(self) -> list[str]:
+        """Retourne les offsets disponibles."""
+        return list(
+            ZONE_THERMOSTAT_OFFSETS.values()
+        )
+
+    @property
+    def current_option(self) -> str | None:
+        """Retourne l'offset actuel."""
+
+        if not self.coordinator.data:
+            return None
+
+        offset = self.coordinator.data[
+            "zone_data"
+        ][self.zone]["thermostat_offset"]
+
+        return ZONE_THERMOSTAT_OFFSETS.get(offset)
+
+    async def async_select_option(
+        self,
+        option: str,
+    ) -> None:
+        """Change l'offset du thermostat."""
+
+        offset = next(
+            value
+            for value, name in ZONE_THERMOSTAT_OFFSETS.items()
+            if name == option
+        )
+
+        await self.coordinator.async_write_zone_thermostat_offset(
+            self.zone,
+            offset,
         )
