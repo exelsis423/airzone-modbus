@@ -185,6 +185,30 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                             slave=self.slave,
                         )
                     ),
+
+                    # R26 - Bits 0-2 : Offset
+                    "thermostat_offset": (
+                        self.client.read_thermostat_lite_setpoint_offset(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
+
+                    # R26 - Bit 3 : LED
+                    "thermostat_led": (
+                        self.client.read_thermostat_lite_status_led(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
+
+                    # R26 - Bit 5 : Lite présent
+                    "thermostat_lite_present": (
+                        self.client.read_thermostat_lite_present(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
                 }
 
             return {
