@@ -39,7 +39,10 @@ async def async_setup_entry(
 
     await hass.config_entries.async_forward_entry_setups(
         entry,
-        ["sensor", "binary_sensor"],
+        [
+            "sensor",
+            "binary_sensor",
+        ],
     )
 
     return True
@@ -53,10 +56,16 @@ async def async_unload_entry(
 
     unload_ok = await hass.config_entries.async_unload_platforms(
         entry,
-        ["sensor", "binary_sensor"],
+        [
+            "sensor",
+            "binary_sensor",
+        ],
     )
 
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id, None)
+        hass.data[DOMAIN].pop(
+            entry.entry_id,
+            None,
+        )
 
     return unload_ok
