@@ -30,6 +30,7 @@ async def async_setup_entry(
         host=entry.data["host"],
         port=entry.data["port"],
         slave=entry.data["slave"],
+        update_interval=entry.data["update_interval"],
     )
 
     await coordinator.async_config_entry_first_refresh()
