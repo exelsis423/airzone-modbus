@@ -153,6 +153,30 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                             slave=self.slave,
                         )
                     ),
+
+                    # R03 - Consigne
+                    "setpoint": (
+                        self.client.read_zone_setpoint(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
+
+                    # R08 - Température sonde
+                    "temperature": (
+                        self.client.read_zone_temperature(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
+
+                    # R10 - Température thermostat
+                    "thermostat_temperature": (
+                        self.client.read_zone_thermostat_temperature(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
                 }
 
             return {
