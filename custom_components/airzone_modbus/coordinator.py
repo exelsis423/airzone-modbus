@@ -94,6 +94,22 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                             slave=self.slave,
                         )
                     ),
+
+                    # R00 - BIT 1
+                    "schedule_disabled": (
+                        self.client.read_zone_schedule_disabled(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
+
+                    # R00 - BIT 2
+                    "state": (
+                        self.client.read_zone_state(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
                 }
 
             return {
