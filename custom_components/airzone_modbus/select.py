@@ -1,4 +1,3 @@
-```python
 """Select entities for Airzone Modbus."""
 
 from __future__ import annotations
@@ -172,4 +171,4 @@ class AirzoneMachineSpeedSelect(
         await self.coordinator.async_write_machine_speed(
             speed
         )
-```
+
