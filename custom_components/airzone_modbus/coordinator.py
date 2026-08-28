@@ -11,7 +11,7 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from .client import AirzoneClient
+from airzone_modbus.client import AirzoneClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,10 +31,12 @@ class AirzoneCoordinator(
     ) -> None:
         """Initialize the coordinator."""
 
+        self.hass = hass
+        self.slave = slave
+
         self.client = AirzoneClient(
             host=host,
             port=port,
-            slave=slave,
         )
 
         super().__init__(
@@ -54,36 +56,48 @@ class AirzoneCoordinator(
         """Read all Airzone data."""
 
         try:
-            # ----------------------------------------------------
-            # MACHINE
-            # ----------------------------------------------------
+            await self.hass.async_add_executor_job(
+                self.client.connect
+            )
 
             machine_mode = (
-                await self.client.read_machine_mode()
+                await self.hass.async_add_executor_job(
+                    self.client.read_machine_mode,
+                    self.slave,
+                )
             )
 
             machine_speed = (
-                await self.client.read_machine_speed()
+                await self.hass.async_add_executor_job(
+                    self.client.read_machine_speed,
+                    self.slave,
+                )
             )
 
-            # ----------------------------------------------------
-            # ZONES
-            # ----------------------------------------------------
-
-            zones = await self.client.read_zones()
+            zones = (
+                await self.hass.async_add_executor_job(
+                    self.client.read_machine_zones,
+                    self.slave,
+                )
+            )
 
             zone_data = {}
 
             for zone in zones:
-                # -----------------------------------------------
-                # R00
-                # -----------------------------------------------
+                base = zone * 256
 
-                r00 = await self.client.read_zone_r00(
-                    zone
+                # ------------------------------------------------
+                # R00
+                # ------------------------------------------------
+
+                r00 = (
+                    await self.hass.async_add_executor_job(
+                        self.client.read_zone_r00,
+                        base,
+                        self.slave,
+                    )
                 )
 
-                # R00 bits
                 local_ventilation = bool(
                     r00 & (1 << 0)
                 )
@@ -106,7 +120,7 @@ class AirzoneCoordinator(
 
                 mode = (
                     r00 >> 8
-                ) & 0b1111
+                ) & 0x0F
 
                 automatic_mode = bool(
                     r00 & (1 << 12)
@@ -116,94 +130,95 @@ class AirzoneCoordinator(
                     r00 & (1 << 15)
                 )
 
-                # -----------------------------------------------
+                # ------------------------------------------------
                 # R03
-                # -----------------------------------------------
+                # ------------------------------------------------
 
                 setpoint = (
-                    await self.client.read_zone_setpoint(
-                        zone
+                    await self.hass.async_add_executor_job(
+                        self.client.read_zone_setpoint,
+                        base,
+                        self.slave,
                     )
                 )
 
-                # -----------------------------------------------
+                # ------------------------------------------------
                 # R08
-                # -----------------------------------------------
+                # ------------------------------------------------
 
                 temperature = (
-                    await self.client.read_zone_temperature(
-                        zone
+                    await self.hass.async_add_executor_job(
+                        self.client.read_zone_temperature,
+                        base,
+                        self.slave,
                     )
                 )
 
-                # -----------------------------------------------
+                # ------------------------------------------------
                 # R10
-                # -----------------------------------------------
+                # ------------------------------------------------
 
                 thermostat_temperature = (
-                    await self.client.read_zone_thermostat_temperature(
-                        zone
+                    await self.hass.async_add_executor_job(
+                        self.client.read_zone_thermostat_temperature,
+                        base,
+                        self.slave,
                     )
                 )
 
-                # -----------------------------------------------
+                # ------------------------------------------------
                 # R14-R19
-                # -----------------------------------------------
+                # ------------------------------------------------
 
                 name = (
-                    await self.client.read_zone_name(
-                        zone
+                    await self.hass.async_add_executor_job(
+                        self.client.read_zone_name,
+                        base,
+                        self.slave,
                     )
                 )
 
-                # -----------------------------------------------
+                # ------------------------------------------------
                 # R26
-                # -----------------------------------------------
+                # ------------------------------------------------
 
-                r26 = await self.client.read_zone_r26(
-                    zone
-                )
-
-                # Bits 0-2 :
-                # 0 -> -3
-                # 1 -> -2
-                # 2 -> -1
-                # 3 ->  0
-                # 4 -> +1
-                # 5 -> +2
-                # 6 -> +3
-
-                thermostat_offset_raw = (
-                    r26 & 0b111
+                r26 = (
+                    await self.hass.async_add_executor_job(
+                        self.client.read_zone_r26,
+                        base,
+                        self.slave,
+                    )
                 )
 
                 thermostat_offset = (
-                    thermostat_offset_raw - 3
-                )
-
-                # Bit 3
-                thermostat_led = bool(
-                    r26 & (1 << 3)
-                )
-
-                # Bit 5
-                thermostat_lite_present = bool(
-                    r26 & (1 << 5)
-                )
-
-                # -----------------------------------------------
-                # R31
-                # -----------------------------------------------
-
-                humidity = (
-                    await self.client.read_zone_humidity(
-                        zone
+                    self.client.decode_thermostat_lite_offset(
+                        r26
                     )
                 )
 
-                # -----------------------------------------------
-                # STORE ZONE DATA
-                # -----------------------------------------------
+                thermostat_led = (
+                    self.client.decode_thermostat_lite_led(
+                        r26
+                    )
+                )
+
+                thermostat_lite_present = (
+                    self.client.decode_thermostat_lite_present(
+                        r26
+                    )
+                )
+
+                # ------------------------------------------------
+                # R31
+                # ------------------------------------------------
+
+                humidity = (
+                    await self.hass.async_add_executor_job(
+                        self.client.read_zone_humidity,
+                        base,
+                        self.slave,
+                    )
+                )
 
                 zone_data[zone] = {
                     # R00
@@ -275,8 +290,10 @@ class AirzoneCoordinator(
     ) -> None:
         """Write machine mode."""
 
-        await self.client.write_machine_mode(
-            mode
+        await self.hass.async_add_executor_job(
+            self.client.write_machine_mode,
+            mode,
+            self.slave,
         )
 
         await self.async_request_refresh()
@@ -287,8 +304,10 @@ class AirzoneCoordinator(
     ) -> None:
         """Write machine speed."""
 
-        await self.client.write_machine_speed(
-            speed
+        await self.hass.async_add_executor_job(
+            self.client.write_machine_speed,
+            speed,
+            self.slave,
         )
 
         await self.async_request_refresh()
@@ -304,9 +323,11 @@ class AirzoneCoordinator(
     ) -> None:
         """Write zone state."""
 
-        await self.client.write_zone_state(
-            zone,
+        await self.hass.async_add_executor_job(
+            self.client.write_zone_state,
+            zone * 256,
             state,
+            self.slave,
         )
 
         await self.async_request_refresh()
@@ -318,9 +339,11 @@ class AirzoneCoordinator(
     ) -> None:
         """Write zone automatic mode."""
 
-        await self.client.write_zone_automatic_mode(
-            zone,
+        await self.hass.async_add_executor_job(
+            self.client.write_zone_automatic_mode,
+            zone * 256,
             automatic_mode,
+            self.slave,
         )
 
         await self.async_request_refresh()
@@ -332,9 +355,11 @@ class AirzoneCoordinator(
     ) -> None:
         """Write zone schedule state."""
 
-        await self.client.write_zone_schedule_disabled(
-            zone,
+        await self.hass.async_add_executor_job(
+            self.client.write_zone_schedule_disabled,
+            zone * 256,
             disabled,
+            self.slave,
         )
 
         await self.async_request_refresh()
@@ -346,9 +371,11 @@ class AirzoneCoordinator(
     ) -> None:
         """Write zone mode."""
 
-        await self.client.write_zone_mode(
-            zone,
+        await self.hass.async_add_executor_job(
+            self.client.write_zone_mode,
+            zone * 256,
             mode,
+            self.slave,
         )
 
         await self.async_request_refresh()
@@ -360,9 +387,11 @@ class AirzoneCoordinator(
     ) -> None:
         """Write zone speed."""
 
-        await self.client.write_zone_speed(
-            zone,
+        await self.hass.async_add_executor_job(
+            self.client.write_zone_speed,
+            zone * 256,
             speed,
+            self.slave,
         )
 
         await self.async_request_refresh()
@@ -374,9 +403,11 @@ class AirzoneCoordinator(
     ) -> None:
         """Write zone sleep mode."""
 
-        await self.client.write_zone_sleep_mode(
-            zone,
+        await self.hass.async_add_executor_job(
+            self.client.write_zone_sleep_mode,
+            zone * 256,
             sleep_mode,
+            self.slave,
         )
 
         await self.async_request_refresh()
