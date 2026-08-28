@@ -66,13 +66,6 @@ async def async_setup_entry(
                     zone,
                 ),
 
-                # R26 bits 0-2
-                AirzoneZoneThermostatOffset(
-                    coordinator,
-                    entry,
-                    zone,
-                ),
-
                 # R31
                 AirzoneZoneHumidity(
                     coordinator,
@@ -258,50 +251,6 @@ class AirzoneZoneName(
 
 
 # ============================================================
-# ZONE - R26 BITS 0-2
-# ============================================================
-
-
-class AirzoneZoneThermostatOffset(
-    CoordinatorEntity[AirzoneCoordinator],
-    SensorEntity,
-):
-    """Thermostat Lite temperature offset."""
-
-    _attr_native_unit_of_measurement = (
-        UnitOfTemperature.CELSIUS
-    )
-    _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_icon = "mdi:thermometer-plus"
-
-    def __init__(
-        self,
-        coordinator,
-        entry,
-        zone: int,
-    ) -> None:
-        super().__init__(coordinator)
-
-        self.zone = zone
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_zone_{zone}_thermostat_offset"
-        )
-
-        self._attr_name = (
-            f"Airzone — Zone {zone} — "
-            "Offset température"
-        )
-
-    @property
-    def native_value(self) -> float:
-        """Return thermostat temperature offset."""
-        return self.coordinator.data[
-            "zone_data"
-        ][self.zone]["thermostat_offset"]
-
-
-# ============================================================
 # ZONE - R31
 # ============================================================
 
@@ -341,3 +290,4 @@ class AirzoneZoneHumidity(
         return self.coordinator.data[
             "zone_data"
         ][self.zone]["humidity"]
+```
