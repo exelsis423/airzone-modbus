@@ -44,6 +44,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
             ),
         )
 
+    # ================================================================
+    # LECTURE
+    # ================================================================
+
     async def _async_update_data(self):
         """Récupère les données Airzone."""
         try:
@@ -395,3 +399,289 @@ class AirzoneCoordinator(DataUpdateCoordinator):
         finally:
             self.client.close()
 
+    # ================================================================
+    # ÉCRITURES ZONES - R00
+    # ================================================================
+
+    async def async_write_zone_mode(
+        self,
+        zone: int,
+        mode: int,
+    ) -> None:
+        """Écrit le mode d'une zone."""
+
+        await self.hass.async_add_executor_job(
+            self._write_zone_mode,
+            zone,
+            mode,
+        )
+
+        if self.data is not None:
+            mode_names = {
+                0: "Arrêt",
+                1: "Refroidissement",
+                3: "Ventilation",
+                5: "Chauffage",
+                6: "Sec",
+            }
+
+            self.data["zone_data"][zone]["mode"] = mode_names.get(
+                mode,
+                f"Inconnu ({mode})",
+            )
+
+            self.async_set_updated_data(self.data)
+
+    def _write_zone_mode(
+        self,
+        zone: int,
+        mode: int,
+    ) -> None:
+        """Écriture synchrone du mode d'une zone."""
+
+        if not self.client.connect():
+            raise RuntimeError(
+                "Impossible de se connecter à Airzone"
+            )
+
+        try:
+            base_address = zone * 256
+
+            self.client.write_zone_mode(
+                base_address,
+                mode,
+                slave=self.slave,
+            )
+        finally:
+            self.client.close()
+
+    async def async_write_zone_state(
+        self,
+        zone: int,
+        state: bool,
+    ) -> None:
+        """Active ou désactive une zone."""
+
+        await self.hass.async_add_executor_job(
+            self._write_zone_state,
+            zone,
+            state,
+        )
+
+        if self.data is not None:
+            self.data["zone_data"][zone]["state"] = state
+
+            self.async_set_updated_data(self.data)
+
+    def _write_zone_state(
+        self,
+        zone: int,
+        state: bool,
+    ) -> None:
+        """Écriture synchrone de l'état d'une zone."""
+
+        if not self.client.connect():
+            raise RuntimeError(
+                "Impossible de se connecter à Airzone"
+            )
+
+        try:
+            base_address = zone * 256
+
+            self.client.write_zone_state(
+                base_address,
+                state,
+                slave=self.slave,
+            )
+        finally:
+            self.client.close()
+
+    async def async_write_zone_automatic_mode(
+        self,
+        zone: int,
+        enabled: bool,
+    ) -> None:
+        """Active ou désactive le mode automatique."""
+
+        await self.hass.async_add_executor_job(
+            self._write_zone_automatic_mode,
+            zone,
+            enabled,
+        )
+
+        if self.data is not None:
+            self.data["zone_data"][zone][
+                "automatic_mode"
+            ] = enabled
+
+            self.async_set_updated_data(self.data)
+
+    def _write_zone_automatic_mode(
+        self,
+        zone: int,
+        enabled: bool,
+    ) -> None:
+        """Écriture synchrone du mode automatique."""
+
+        if not self.client.connect():
+            raise RuntimeError(
+                "Impossible de se connecter à Airzone"
+            )
+
+        try:
+            base_address = zone * 256
+
+            self.client.write_zone_automatic_mode(
+                base_address,
+                enabled,
+                slave=self.slave,
+            )
+        finally:
+            self.client.close()
+
+    async def async_write_zone_sleep_mode(
+        self,
+        zone: int,
+        sleep_mode: int,
+    ) -> None:
+        """Écrit le mode veille d'une zone."""
+
+        await self.hass.async_add_executor_job(
+            self._write_zone_sleep_mode,
+            zone,
+            sleep_mode,
+        )
+
+        if self.data is not None:
+            sleep_mode_names = {
+                0: "Veille Off",
+                1: "Veille 30",
+                2: "Veille 60",
+                3: "Veille 90",
+            }
+
+            self.data["zone_data"][zone][
+                "sleep_mode"
+            ] = sleep_mode_names.get(
+                sleep_mode,
+                f"Inconnu ({sleep_mode})",
+            )
+
+            self.async_set_updated_data(self.data)
+
+    def _write_zone_sleep_mode(
+        self,
+        zone: int,
+        sleep_mode: int,
+    ) -> None:
+        """Écriture synchrone du mode veille."""
+
+        if not self.client.connect():
+            raise RuntimeError(
+                "Impossible de se connecter à Airzone"
+            )
+
+        try:
+            base_address = zone * 256
+
+            self.client.write_zone_sleep_mode(
+                base_address,
+                sleep_mode,
+                slave=self.slave,
+            )
+        finally:
+            self.client.close()
+
+    async def async_write_zone_schedule_disabled(
+        self,
+        zone: int,
+        disabled: bool,
+    ) -> None:
+        """Active ou désactive les programmations horaires."""
+
+        await self.hass.async_add_executor_job(
+            self._write_zone_schedule_disabled,
+            zone,
+            disabled,
+        )
+
+        if self.data is not None:
+            self.data["zone_data"][zone][
+                "schedule_disabled"
+            ] = disabled
+
+            self.async_set_updated_data(self.data)
+
+    def _write_zone_schedule_disabled(
+        self,
+        zone: int,
+        disabled: bool,
+    ) -> None:
+        """Écriture synchrone de la programmation horaire."""
+
+        if not self.client.connect():
+            raise RuntimeError(
+                "Impossible de modifier la programmation horaire"
+            )
+
+        try:
+            base_address = zone * 256
+
+            self.client.write_zone_schedule_disabled(
+                base_address,
+                disabled,
+                slave=self.slave,
+            )
+        finally:
+            self.client.close()
+
+    async def async_write_zone_speed(
+        self,
+        zone: int,
+        speed: int,
+    ) -> None:
+        """Écrit la vitesse d'une zone."""
+
+        await self.hass.async_add_executor_job(
+            self._write_zone_speed,
+            zone,
+            speed,
+        )
+
+        if self.data is not None:
+            speed_names = {
+                0: "Automatique",
+                1: "Faible",
+                2: "Moyenne",
+                3: "Élevée",
+            }
+
+            self.data["zone_data"][zone]["speed"] = speed_names.get(
+                speed,
+                f"Inconnu ({speed})",
+            )
+
+            self.async_set_updated_data(self.data)
+
+    def _write_zone_speed(
+        self,
+        zone: int,
+        speed: int,
+    ) -> None:
+        """Écriture synchrone de la vitesse d'une zone."""
+
+        if not self.client.connect():
+            raise RuntimeError(
+                "Impossible de se connecter à Airzone"
+            )
+
+        try:
+            base_address = zone * 256
+
+            self.client.write_zone_speed(
+                base_address,
+                speed,
+                slave=self.slave,
+            )
+        finally:
+            self.client.close()
