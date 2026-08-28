@@ -58,6 +58,7 @@ class AirzoneCoordinator(DataUpdateCoordinator):
 
     def _update_data(self):
         """Lecture synchrone des données."""
+
         if not self.client.connect():
             raise RuntimeError(
                 "Impossible de se connecter à Airzone"
@@ -72,11 +73,19 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                 slave=self.slave,
             )
 
-            machine_mode = self.client.read_machine_mode_name(
+            machine_mode = self.client.read_machine_mode(
                 slave=self.slave,
             )
 
-            machine_speed = self.client.read_machine_speed_name(
+            machine_mode_name = self.client.read_machine_mode_name(
+                slave=self.slave,
+            )
+
+            machine_speed = self.client.read_machine_speed(
+                slave=self.slave,
+            )
+
+            machine_speed_name = self.client.read_machine_speed_name(
                 slave=self.slave,
             )
 
@@ -269,8 +278,10 @@ class AirzoneCoordinator(DataUpdateCoordinator):
 
             return {
                 "machine": {
-                    "mode_name": machine_mode,
-                    "speed_name": machine_speed,
+                    "mode": machine_mode,
+                    "mode_name": machine_mode_name,
+                    "speed": machine_speed,
+                    "speed_name": machine_speed_name,
                 },
                 "zones": zones,
                 "zone_data": zone_data,
@@ -278,3 +289,4 @@ class AirzoneCoordinator(DataUpdateCoordinator):
 
         finally:
             self.client.close()
+
