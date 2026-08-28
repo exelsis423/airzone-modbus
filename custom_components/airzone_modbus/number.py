@@ -37,6 +37,14 @@ async def async_setup_entry(
             )
         )
 
+        entities.append(
+            AirzoneZoneSetpointNumber(
+                coordinator,
+                entry,
+                zone,
+            )
+        )
+
     async_add_entities(entities)
 
 
@@ -89,4 +97,55 @@ class AirzoneZoneThermostatOffsetNumber(
         await self.coordinator.async_write_thermostat_lite_setpoint_offset(
             self.zone,
             int(value),
+        )
+
+class AirzoneZoneSetpointNumber(
+    CoordinatorEntity[AirzoneCoordinator],
+    NumberEntity,
+):
+    """Consigne de température de la zone."""
+
+    _attr_device_class = NumberDeviceClass.TEMPERATURE
+    _attr_native_min_value = 18
+    _attr_native_max_value = 30
+    _attr_native_step = 0.5
+    _attr_native_unit_of_measurement = "°C"
+    _attr_icon = "mdi:thermostat"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_setpoint_number"
+        )
+
+        self._attr_name = (
+            f"Airzone — Zone {zone} — "
+            "Consigne"
+        )
+
+    @property
+    def native_value(self) -> float | None:
+        """Retourne la consigne actuelle."""
+
+        return self.coordinator.data[
+            "zone_data"
+        ][self.zone]["setpoint"]
+
+    async def async_set_native_value(
+        self,
+        value: float,
+    ) -> None:
+        """Modifie la consigne."""
+
+        await self.coordinator.async_write_zone_setpoint(
+            self.zone,
+            value,
         )
