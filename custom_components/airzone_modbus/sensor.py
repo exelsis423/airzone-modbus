@@ -5,8 +5,10 @@ from __future__ import annotations
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
+    SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import (
@@ -49,6 +51,21 @@ async def async_setup_entry(
                     entry,
                     zone,
                 ),
+                AirzoneZoneSetpoint(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
+                AirzoneZoneTemperature(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
+                AirzoneZoneThermostatTemperature(
+                    coordinator,
+                    entry,
+                    zone,
+                ),
             ]
         )
 
@@ -68,15 +85,12 @@ class AirzoneMachineMode(
         coordinator: AirzoneCoordinator,
         entry: ConfigEntry,
     ) -> None:
-        """Initialize the sensor."""
-
         super().__init__(coordinator)
 
         self._attr_unique_id = (
             f"{entry.entry_id}_machine_mode"
         )
         self._attr_name = "Airzone — Mode"
-
 
     @property
     def native_value(self) -> str:
@@ -98,8 +112,6 @@ class AirzoneMachineSpeed(
         coordinator: AirzoneCoordinator,
         entry: ConfigEntry,
     ) -> None:
-        """Initialize the sensor."""
-
         super().__init__(coordinator)
 
         self._attr_unique_id = (
@@ -108,7 +120,6 @@ class AirzoneMachineSpeed(
         self._attr_name = (
             "Airzone — Vitesse ventilation"
         )
-
 
     @property
     def native_value(self) -> str:
@@ -131,8 +142,6 @@ class AirzoneZoneSpeed(
         entry: ConfigEntry,
         zone: int,
     ) -> None:
-        """Initialize the sensor."""
-
         super().__init__(coordinator)
 
         self.zone = zone
@@ -167,8 +176,6 @@ class AirzoneZoneSleepMode(
         entry: ConfigEntry,
         zone: int,
     ) -> None:
-        """Initialize the sensor."""
-
         super().__init__(coordinator)
 
         self.zone = zone
@@ -203,8 +210,6 @@ class AirzoneZoneMode(
         entry: ConfigEntry,
         zone: int,
     ) -> None:
-        """Initialize the sensor."""
-
         super().__init__(coordinator)
 
         self.zone = zone
@@ -223,3 +228,114 @@ class AirzoneZoneMode(
         return self.coordinator.data["zone_data"][
             self.zone
         ]["mode"]
+
+
+class AirzoneZoneSetpoint(
+    CoordinatorEntity[AirzoneCoordinator],
+    SensorEntity,
+):
+    """Setpoint of an Airzone zone."""
+
+    _attr_device_class = SensorDeviceClass.TEMPERATURE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_icon = "mdi:thermometer"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_setpoint"
+        )
+        self._attr_name = (
+            f"Airzone — Zone {zone} — Consigne"
+        )
+
+    @property
+    def native_value(self) -> float:
+        """Return the zone setpoint."""
+
+        return self.coordinator.data["zone_data"][
+            self.zone
+        ]["setpoint"]
+
+
+class AirzoneZoneTemperature(
+    CoordinatorEntity[AirzoneCoordinator],
+    SensorEntity,
+):
+    """Current temperature measured by the zone sensor."""
+
+    _attr_device_class = SensorDeviceClass.TEMPERATURE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_icon = "mdi:thermometer"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_temperature"
+        )
+        self._attr_name = (
+            f"Airzone — Zone {zone} — Température sonde"
+        )
+
+    @property
+    def native_value(self) -> float:
+        """Return the zone temperature."""
+
+        return self.coordinator.data["zone_data"][
+            self.zone
+        ]["temperature"]
+
+
+class AirzoneZoneThermostatTemperature(
+    CoordinatorEntity[AirzoneCoordinator],
+    SensorEntity,
+):
+    """Temperature measured by the zone thermostat."""
+
+    _attr_device_class = SensorDeviceClass.TEMPERATURE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_icon = "mdi:thermometer"
+
+    def __init__(
+        self,
+        coordinator: AirzoneCoordinator,
+        entry: ConfigEntry,
+        zone: int,
+    ) -> None:
+        super().__init__(coordinator)
+
+        self.zone = zone
+
+        self._attr_unique_id = (
+            f"{entry.entry_id}_zone_{zone}_thermostat_temperature"
+        )
+        self._attr_name = (
+            f"Airzone — Zone {zone} — Température thermostat"
+        )
+
+    @property
+    def native_value(self) -> float:
+        """Return the thermostat temperature."""
+
+        return self.coordinator.data["zone_data"][
+            self.zone
+        ]["thermostat_temperature"]
