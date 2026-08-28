@@ -1,4 +1,3 @@
-```python
 """Client Modbus pour les systèmes Airzone."""
 
 from pymodbus.client import ModbusTcpClient
@@ -810,4 +809,4 @@ class AirzoneClient:
             value=(1 << 12) if enabled else 0,
             slave=slave,
         )
-```
+
