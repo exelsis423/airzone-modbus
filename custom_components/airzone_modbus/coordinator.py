@@ -137,6 +137,22 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                             slave=self.slave,
                         )
                     ),
+
+                    # R00 - BIT 12
+                    "automatic_mode": (
+                        self.client.read_zone_automatic_mode(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
+
+                    # R00 - BIT 15
+                    "bit15": (
+                        self.client.read_zone_bit15(
+                            base_address,
+                            slave=self.slave,
+                        )
+                    ),
                 }
 
             return {
