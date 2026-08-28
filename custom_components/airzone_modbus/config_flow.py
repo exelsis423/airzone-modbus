@@ -9,10 +9,18 @@ from homeassistant.data_entry_flow import FlowResult
 
 from airzone_modbus.client import AirzoneClient
 
-from .const import DEFAULT_PORT, DEFAULT_SLAVE, DOMAIN
+from .const import (
+    DEFAULT_PORT,
+    DEFAULT_SLAVE,
+    DEFAULT_UPDATE_INTERVAL,
+    DOMAIN,
+    UPDATE_INTERVAL_MAX,
+    UPDATE_INTERVAL_MIN,
+)
 
 
 CONF_SLAVE = "slave"
+CONF_UPDATE_INTERVAL = "update_interval"
 
 
 class AirzoneModbusConfigFlow(
@@ -68,14 +76,27 @@ class AirzoneModbusConfigFlow(
                 vol.Required(
                     CONF_HOST,
                 ): str,
+
                 vol.Required(
                     CONF_PORT,
                     default=DEFAULT_PORT,
                 ): int,
+
                 vol.Required(
                     CONF_SLAVE,
                     default=DEFAULT_SLAVE,
                 ): int,
+
+                vol.Required(
+                    CONF_UPDATE_INTERVAL,
+                    default=DEFAULT_UPDATE_INTERVAL,
+                ): vol.All(
+                    vol.Coerce(int),
+                    vol.Range(
+                        min=UPDATE_INTERVAL_MIN,
+                        max=UPDATE_INTERVAL_MAX,
+                    ),
+                ),
             }
         )
 
