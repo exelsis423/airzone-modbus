@@ -50,13 +50,6 @@ ZONE_MODES = {
     6: "Sec",
 }
 
-ZONE_SPEEDS = {
-    0: "Automatique",
-    1: "Faible",
-    2: "Moyenne",
-    3: "Élevée",
-}
-
 ZONE_SLEEP_MODES = {
     0: "Veille Off",
     1: "Veille 30",
@@ -98,11 +91,6 @@ async def async_setup_entry(
         entities.extend(
             [
                 AirzoneZoneModeSelect(
-                    coordinator,
-                    entry,
-                    zone,
-                ),
-                AirzoneZoneSpeedSelect(
                     coordinator,
                     entry,
                     zone,
@@ -311,73 +299,6 @@ class AirzoneZoneModeSelect(
         )
 
 
-# ============================================================
-# ZONE - VITESSE
-# R00 bits 4-5
-# ============================================================
-
-
-class AirzoneZoneSpeedSelect(
-    CoordinatorEntity[AirzoneCoordinator],
-    SelectEntity,
-):
-    """Sélecteur de la vitesse d'une zone."""
-
-    _attr_has_entity_name = False
-    _attr_icon = "mdi:fan"
-
-    def __init__(
-        self,
-        coordinator: AirzoneCoordinator,
-        entry: ConfigEntry,
-        zone: int,
-    ) -> None:
-        super().__init__(coordinator)
-
-        self.zone = zone
-
-        self._attr_unique_id = (
-            f"{entry.entry_id}_zone_{zone}_speed"
-        )
-
-        self._attr_name = (
-            f"Airzone — Zone {zone} — Vitesse"
-        )
-
-    @property
-    def options(self) -> list[str]:
-        """Retourne les vitesses disponibles."""
-        return list(ZONE_SPEEDS.values())
-
-    @property
-    def current_option(self) -> str | None:
-        """Retourne la vitesse actuelle."""
-
-        if not self.coordinator.data:
-            return None
-
-        speed = self.coordinator.data[
-            "zone_data"
-        ][self.zone]["speed"]
-
-        return speed
-
-    async def async_select_option(
-        self,
-        option: str,
-    ) -> None:
-        """Change la vitesse de la zone."""
-
-        speed = next(
-            value
-            for value, name in ZONE_SPEEDS.items()
-            if name == option
-        )
-
-        await self.coordinator.async_write_zone_speed(
-            self.zone,
-            speed,
-        )
 
 
 # ============================================================
