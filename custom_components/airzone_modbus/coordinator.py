@@ -136,16 +136,7 @@ class AirzoneCoordinator(DataUpdateCoordinator):
                         )
                     ),
 
-                    # ------------------------------------------------
-                    # R00 - BITS 4-5
-                    # Vitesse
-                    # ------------------------------------------------
-                    "speed": (
-                        self.client.read_zone_speed_name(
-                            base_address,
-                            slave=self.slave,
-                        )
-                    ),
+
 
                     # ------------------------------------------------
                     # R00 - BITS 6-7
@@ -635,56 +626,9 @@ class AirzoneCoordinator(DataUpdateCoordinator):
         finally:
             self.client.close()
 
-    async def async_write_zone_speed(
-        self,
-        zone: int,
-        speed: int,
-    ) -> None:
-        """Écrit la vitesse d'une zone."""
 
-        await self.hass.async_add_executor_job(
-            self._write_zone_speed,
-            zone,
-            speed,
-        )
 
-        if self.data is not None:
-            speed_names = {
-                0: "Automatique",
-                1: "Faible",
-                2: "Moyenne",
-                3: "Élevée",
-            }
 
-            self.data["zone_data"][zone]["speed"] = speed_names.get(
-                speed,
-                f"Inconnu ({speed})",
-            )
-
-            self.async_set_updated_data(self.data)
-
-    def _write_zone_speed(
-        self,
-        zone: int,
-        speed: int,
-    ) -> None:
-        """Écriture synchrone de la vitesse d'une zone."""
-
-        if not self.client.connect():
-            raise RuntimeError(
-                "Impossible de se connecter à Airzone"
-            )
-
-        try:
-            base_address = zone * 256
-
-            self.client.write_zone_speed(
-                base_address,
-                speed,
-                slave=self.slave,
-            )
-        finally:
-            self.client.close()
 
     # ================================================================
     # ÉCRITURES ZONES - R03
