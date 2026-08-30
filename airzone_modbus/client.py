@@ -108,42 +108,7 @@ class AirzoneClient:
 
         return bool(registers[0] & (1 << 2))
 
-    def read_zone_speed(
-        self,
-        base_address: int,
-        slave: int = 1,
-    ):
-        """Lit les bits 4-5 : vitesse."""
-        registers = self.read_registers(
-            address=base_address,
-            count=1,
-            slave=slave,
-        )
 
-        return (registers[0] >> 4) & 0b11
-
-    def read_zone_speed_name(
-        self,
-        base_address: int,
-        slave: int = 1,
-    ):
-        """Retourne le nom de la vitesse."""
-        speed = self.read_zone_speed(
-            base_address,
-            slave=slave,
-        )
-
-        names = {
-            0: "Automatique",
-            1: "Faible",
-            2: "Moyenne",
-            3: "Élevée",
-        }
-
-        return names.get(
-            speed,
-            f"Inconnue ({speed})",
-        )
 
     def read_zone_sleep_mode(
         self,
@@ -768,25 +733,7 @@ class AirzoneClient:
             slave=slave,
         )
 
-    def write_zone_speed(
-        self,
-        base_address: int,
-        speed: int,
-        slave: int = 1,
-    ) -> None:
-        """Modifie la vitesse de ventilation de la zone."""
-
-        if speed not in (0, 1, 2, 3):
-            raise ValueError(
-                f"Vitesse de zone invalide : {speed}"
-            )
-
-        self._modify_zone_r00(
-            base_address,
-            mask=(0b11 << 4),
-            value=(speed << 4),
-            slave=slave,
-        )
+    
 
     def write_zone_sleep_mode(
         self,
