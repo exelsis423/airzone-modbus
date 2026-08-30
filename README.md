@@ -1171,4 +1171,6 @@ Fonctionnalités actuellement implémentées :
 
 ## Licence
 
-À compléter selon la licence choisie pour le projet.
+Projet personnel mis à disposition sur GitHub.
+
+Voir les fichiers du dépôt pour les informations de licence applicables.
