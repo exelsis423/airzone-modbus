@@ -14,6 +14,22 @@ Cette bibliothèque a été développée pour permettre la lecture et l'écritur
 
 ---
 
+## Documentation Modbus de référence
+
+Le dépôt contient le document PDF de référence utilisé pour l'analyse et l'implémentation des registres Modbus Airzone :
+
+**[Documentation des registres Modbus Airzone — MI_AZ6_MODBUS_A4_MUL.pdf](documents/MI_AZ6_MODBUS_A4_MUL.pdf)**
+
+Ce document constitue la documentation de référence disponible pour le protocole Modbus Airzone. Il a été utilisé conjointement avec des tests réalisés sur un système Airzone réel afin d'identifier et de vérifier les registres exploités par cette bibliothèque.
+
+> ⚠️ **À noter**
+>
+> La présence d'un registre ou d'une valeur dans cette documentation ne signifie pas nécessairement que son fonctionnement a été entièrement vérifié avec ce client.
+>
+> Les fonctions actuellement implémentées dans la bibliothèque correspondent aux registres qui ont été identifiés et/ou validés au cours des tests. Certaines informations restent donc expérimentales.
+
+---
+
 ## Installation
 
 La bibliothèque utilise [`pymodbus`](https://pypi.org/project/pymodbus/) pour la communication Modbus TCP.
@@ -1104,7 +1120,6 @@ Les fonctions suivantes sont notamment conservées comme outils d'analyse :
 read_zone_r26()
 read_zone_bit15()
 read_machine_register_0()
-read_zone_r00()
 ```
 
 Elles permettent de travailler directement avec les valeurs brutes lorsque cela est nécessaire.
